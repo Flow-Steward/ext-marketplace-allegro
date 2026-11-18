@@ -1,0 +1,25 @@
+page_id: setup-guide
+title: Setup Guide
+description: Connect an Allegro seller account in a few minutes.
+components:
+  - component_id: setup_steps
+    type: markdown
+    title: Connect Allegro
+    body: |
+      1. **Register an application.** Sign in at [apps.developer.allegro.pl](https://apps.developer.allegro.pl) with the Allegro account that will own it and add a new application of the type that runs in a browser (authorization with a redirect).
+      2. **Copy the redirect address.** Open **Connection** in Flow Steward. It shows the OAuth Redirect URI of this project; paste it into the application's redirect addresses.
+      3. **Choose the permissions** the application may ask for. Each step names the one it needs: for example `allegro:api:sale:offers:read` to read offers, `allegro:api:sale:offers:write` to change stock and prices, `allegro:api:orders:read` for orders. `allegro:api:profile:read` is always needed.
+      4. **Copy the Client ID and Client Secret** of the application into **Connection** and save them.
+      5. Press **Connect**, sign in to Allegro with the seller account and allow the access. Then press **Test connection**.
+      6. Add Allegro steps to a workflow. Start with **Test connection**, **Get all my offers** or **Get orders**, then add the steps that change data.
+  - component_id: setup_sandbox
+    type: markdown
+    title: Try it on Allegro Sandbox
+    body: |
+      Allegro Sandbox is Allegro's separate test marketplace: changes made there never reach allegro.pl.
+
+      1. Create a Sandbox account at [allegro.pl.allegrosandbox.pl](https://allegro.pl.allegrosandbox.pl) and register an application at [apps.developer.allegro.pl.allegrosandbox.pl](https://apps.developer.allegro.pl.allegrosandbox.pl), as above.
+      2. Use the **Connection (Sandbox)** page with that application's Client ID and Client Secret.
+      3. Choose the Sandbox connection in a step to run it against Sandbox. Steps that change data really change the Sandbox account.
+
+      A **test run** of a workflow is different: it never sends changes, on either connection.

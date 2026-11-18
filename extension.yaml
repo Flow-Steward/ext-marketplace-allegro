@@ -1,0 +1,751 @@
+manifest_version: 2
+lifecycle:
+  data_schema_version: 1
+  data_migrations: []
+extension_id: flowsteward.allegro
+kind: tool_provider
+version: 0.1.0
+release_stage: active
+billing_mode: free
+display_name: Allegro
+description: |-
+  Connect workflows to Allegro, the Polish online marketplace, through the Allegro REST API. Everyday steps read all your offers, update stock and prices of many offers at once and read the outcome, and read orders and order events.
+
+  Every one of the 270 documented operations of the Allegro REST API has its own step: offers and batch changes, products and categories, pricing and promotion, orders, returns, disputes and messages, shipping and delivery, account and fulfillment. Amounts are exact decimals. A connection is one Allegro or Allegro Sandbox account, authorized through your own Allegro application.
+vendor:
+  name: Flow Steward
+  support_url: https://github.com/Flow-Steward/ext-marketplace-allegro/issues
+  website_url: https://github.com/Flow-Steward/ext-marketplace-allegro
+listing:
+  category: sales
+  tags:
+  - allegro
+  - marketplace
+  - poland
+  - e-commerce
+  - offers
+  - orders
+  summary: Read and update Allegro offers, stock and prices, orders, returns, shipments and messages.
+  categories:
+  - sales
+  - inventory
+  - orders
+  setup_summary: Register an application at apps.developer.allegro.pl, add its Client ID and Client Secret
+    to the connection, sign in to Allegro and run the connection test.
+features:
+- tool
+- action
+required_scopes:
+- extension:invoke
+- artifact:read
+- artifact:write
+machine_auth:
+  service_account_key: svc_ext_allegro
+  required_scopes:
+  - extension:invoke
+  - artifact:read
+  - artifact:write
+account_scope:
+  scope_type: project
+  description: Each authorized Allegro account is a project connection; a project may hold several, for
+    example a production account and a Sandbox account.
+egress:
+  hosts:
+  - api.allegro.pl
+  - upload.allegro.pl
+  - api.allegro.pl.allegrosandbox.pl
+  - upload.allegro.pl.allegrosandbox.pl
+callbacks:
+- callback_id: oauth_authorization
+  purpose: oauth_authorization
+  methods:
+  - GET
+  connection_scoped: false
+external_effects:
+- operation_id: update_stock_and_prices
+  effect_kind: allegro_update_stock_and_prices
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_offer_from_product
+  effect_kind: allegro_create_offer_from_product
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: change_promotion_packages_of_offer
+  effect_kind: allegro_change_promotion_packages_of_offer
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: change_buy_now_price_of_offer
+  effect_kind: allegro_change_buy_now_price_of_offer
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: publish_or_end_offers
+  effect_kind: allegro_publish_or_end_offers
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: change_promotion_packages_of_many_offers
+  effect_kind: allegro_change_promotion_packages_of_many_offers
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: edit_offer
+  effect_kind: allegro_edit_offer
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: delete_draft_offer
+  effect_kind: allegro_delete_draft_offer
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: change_prices_and_stock_of_many_offers_beta
+  effect_kind: allegro_change_prices_and_stock_of_many_offers_beta
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: change_automatic_pricing_of_many_offers
+  effect_kind: allegro_change_automatic_pricing_of_many_offers
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: modify_many_offers
+  effect_kind: allegro_modify_many_offers
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: change_price_of_many_offers
+  effect_kind: allegro_change_price_of_many_offers
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: change_stock_of_many_offers
+  effect_kind: allegro_change_stock_of_many_offers
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_offer_translation
+  effect_kind: allegro_update_offer_translation
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: delete_offer_translation
+  effect_kind: allegro_delete_offer_translation
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_offer_tag
+  effect_kind: allegro_create_offer_tag
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: assign_tags_to_offer
+  effect_kind: allegro_assign_tags_to_offer
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_offer_tag
+  effect_kind: allegro_update_offer_tag
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: delete_offer_tag
+  effect_kind: allegro_delete_offer_tag
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: upload_offer_image
+  effect_kind: allegro_upload_offer_image
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_offer_attachment
+  effect_kind: allegro_create_offer_attachment
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: upload_offer_attachment_file
+  effect_kind: allegro_upload_offer_attachment_file
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: assign_packages_to_classified
+  effect_kind: allegro_assign_packages_to_classified
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: place_bid
+  effect_kind: allegro_place_bid
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: propose_product
+  effect_kind: allegro_propose_product
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: propose_product_changes
+  effect_kind: allegro_propose_product_changes
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: parse_product_ingredients
+  effect_kind: allegro_parse_product_ingredients
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_size_table
+  effect_kind: allegro_create_size_table
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_size_table
+  effect_kind: allegro_update_size_table
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_responsible_person
+  effect_kind: allegro_create_responsible_person
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_responsible_person
+  effect_kind: allegro_update_responsible_person
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_responsible_producer
+  effect_kind: allegro_create_responsible_producer
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_responsible_producer
+  effect_kind: allegro_update_responsible_producer
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: delete_responsible_producer
+  effect_kind: allegro_delete_responsible_producer
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: calculate_offer_fee_and_commission
+  effect_kind: allegro_calculate_offer_fee_and_commission
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_automatic_pricing_rule
+  effect_kind: allegro_create_automatic_pricing_rule
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_automatic_pricing_rule
+  effect_kind: allegro_update_automatic_pricing_rule
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: delete_automatic_pricing_rule
+  effect_kind: allegro_delete_automatic_pricing_rule
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: submit_offers_to_allegro_prices
+  effect_kind: allegro_submit_offers_to_allegro_prices
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: exclude_offers_from_allegro_prices
+  effect_kind: allegro_exclude_offers_from_allegro_prices
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: query_allegro_prices_status_of_offers
+  effect_kind: allegro_query_allegro_prices_status_of_offers
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_allegro_prices_participation
+  effect_kind: allegro_update_allegro_prices_participation
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: submit_offer_to_alle_discount
+  effect_kind: allegro_submit_offer_to_alle_discount
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: withdraw_offer_from_alle_discount
+  effect_kind: allegro_withdraw_offer_from_alle_discount
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: apply_for_badge
+  effect_kind: allegro_apply_for_badge
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_offer_badge
+  effect_kind: allegro_update_offer_badge
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_promotion
+  effect_kind: allegro_create_promotion
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_promotion
+  effect_kind: allegro_update_promotion
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: deactivate_promotion
+  effect_kind: allegro_deactivate_promotion
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_offer_bundle_discount
+  effect_kind: allegro_update_offer_bundle_discount
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: delete_offer_bundle
+  effect_kind: allegro_delete_offer_bundle
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_flexible_bundle
+  effect_kind: allegro_create_flexible_bundle
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_flexible_bundle
+  effect_kind: allegro_update_flexible_bundle
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: delete_flexible_bundle
+  effect_kind: allegro_delete_flexible_bundle
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_additional_services_group
+  effect_kind: allegro_create_additional_services_group
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_additional_services_group
+  effect_kind: allegro_update_additional_services_group
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_additional_services_group_translation
+  effect_kind: allegro_update_additional_services_group_translation
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: delete_additional_services_group_translation
+  effect_kind: allegro_delete_additional_services_group_translation
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: add_order_tracking_number
+  effect_kind: allegro_add_order_tracking_number
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: set_order_serial_numbers
+  effect_kind: allegro_set_order_serial_numbers
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: add_order_invoice
+  effect_kind: allegro_add_order_invoice
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: upload_order_invoice_with_details
+  effect_kind: allegro_upload_order_invoice_with_details
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: add_order_billing_document_link
+  effect_kind: allegro_add_order_billing_document_link
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: set_order_status
+  effect_kind: allegro_set_order_status
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: upload_order_invoice_file
+  effect_kind: allegro_upload_order_invoice_file
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: reject_customer_return_refund
+  effect_kind: allegro_reject_customer_return_refund
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: send_message_in_dispute_or_claim
+  effect_kind: allegro_send_message_in_dispute_or_claim
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: change_claim_status
+  effect_kind: allegro_change_claim_status
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_dispute_attachment
+  effect_kind: allegro_create_dispute_attachment
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: upload_dispute_attachment_file
+  effect_kind: allegro_upload_dispute_attachment_file
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: apply_for_commission_refund
+  effect_kind: allegro_apply_for_commission_refund
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: cancel_commission_refund_application
+  effect_kind: allegro_cancel_commission_refund_application
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: refund_payment
+  effect_kind: allegro_refund_payment
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: write_message
+  effect_kind: allegro_write_message
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: write_message_in_thread
+  effect_kind: allegro_write_message_in_thread
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_message_attachment
+  effect_kind: allegro_create_message_attachment
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: mark_message_thread_as_read
+  effect_kind: allegro_mark_message_thread_as_read
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: upload_message_attachment_file
+  effect_kind: allegro_upload_message_attachment_file
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: delete_message
+  effect_kind: allegro_delete_message
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_shipment
+  effect_kind: allegro_create_shipment
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: cancel_shipment
+  effect_kind: allegro_cancel_shipment
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: download_shipment_labels
+  effect_kind: allegro_download_shipment_labels
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: download_shipment_protocol
+  effect_kind: allegro_download_shipment_protocol
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: get_pickup_proposals
+  effect_kind: allegro_get_pickup_proposals
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: request_shipment_pickup
+  effect_kind: allegro_request_shipment_pickup
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_shipping_rate_set
+  effect_kind: allegro_create_shipping_rate_set
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_shipping_rate_set
+  effect_kind: allegro_update_shipping_rate_set
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_delivery_settings
+  effect_kind: allegro_update_delivery_settings
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_point_of_service
+  effect_kind: allegro_create_point_of_service
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_point_of_service
+  effect_kind: allegro_update_point_of_service
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: delete_point_of_service
+  effect_kind: allegro_delete_point_of_service
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_offer_contact
+  effect_kind: allegro_create_offer_contact
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_offer_contact
+  effect_kind: allegro_update_offer_contact
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_return_policy
+  effect_kind: allegro_create_return_policy
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_implied_warranty
+  effect_kind: allegro_create_implied_warranty
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_warranty
+  effect_kind: allegro_create_warranty
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_warranty_attachment
+  effect_kind: allegro_create_warranty_attachment
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_return_policy
+  effect_kind: allegro_update_return_policy
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_implied_warranty
+  effect_kind: allegro_update_implied_warranty
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_warranty
+  effect_kind: allegro_update_warranty
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: upload_warranty_attachment_file
+  effect_kind: allegro_upload_warranty_attachment_file
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: delete_return_policy
+  effect_kind: allegro_delete_return_policy
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: add_additional_email
+  effect_kind: allegro_add_additional_email
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: answer_rating
+  effect_kind: allegro_answer_rating
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: request_rating_removal
+  effect_kind: allegro_request_rating_removal
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: delete_additional_email
+  effect_kind: allegro_delete_additional_email
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: create_advance_ship_notice
+  effect_kind: allegro_create_advance_ship_notice
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_advance_ship_notice
+  effect_kind: allegro_update_advance_ship_notice
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: cancel_advance_ship_notice
+  effect_kind: allegro_cancel_advance_ship_notice
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: submit_advance_ship_notice
+  effect_kind: allegro_submit_advance_ship_notice
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_submitted_advance_ship_notice
+  effect_kind: allegro_update_submitted_advance_ship_notice
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: delete_advance_ship_notice
+  effect_kind: allegro_delete_advance_ship_notice
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: set_fulfillment_removal_preference
+  effect_kind: allegro_set_fulfillment_removal_preference
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: add_tax_identification_number
+  effect_kind: allegro_add_tax_identification_number
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+- operation_id: update_tax_identification_number
+  effect_kind: allegro_update_tax_identification_number
+  channel: allegro_api
+  idempotency: required
+  test_mode_behavior: suppress
+runtime:
+  contract_version: extension_host_v2
+  extension_contract_v2:
+    oauth_providers:
+    - provider_id: allegro
+      display_name: Allegro
+      description: Sign in to Allegro and allow your Allegro application to act for the account.
+      setup_page_id: connection
+      help_page_id: connection
+      error_help_anchors:
+        invalid_client: if-it-fails
+        authorization_required: if-it-fails
+      flow:
+        type: authorization_code
+        pkce: s256
+      credential_fields:
+      - field_id: client_id
+        value_type: text
+        required: true
+        secret: false
+        change_policy: reauthorization_required
+        label: Client ID
+        help_text: The Client ID of your application at apps.developer.allegro.pl.
+        autocomplete: 'off'
+        validation:
+          min_length: 8
+          max_length: 128
+      - field_id: client_secret
+        value_type: secret
+        required: true
+        secret: true
+        change_policy: runtime_revalidate
+        label: Client Secret
+        help_text: The Client Secret of the same application.
+        autocomplete: 'off'
+        validation:
+          min_length: 8
+          max_length: 512
+      authorization_endpoint:
+        url: https://allegro.pl/auth/oauth/authorize
+      token_endpoint:
+        url: https://allegro.pl/auth/oauth/token
+        client_auth_method: client_secret_basic
+      callback_id: oauth_authorization
+      authorization_intents:
+      - intent_id: connect
+        static_parameters:
+          prompt: confirm
+      post_connect_action_id: verify_identity
+    - provider_id: allegro_sandbox
+      display_name: Allegro Sandbox
+      description: Sign in to Allegro Sandbox and allow your Allegro application to act for the account.
+      setup_page_id: connection-sandbox
+      help_page_id: connection-sandbox
+      error_help_anchors:
+        invalid_client: if-it-fails
+        authorization_required: if-it-fails
+      flow:
+        type: authorization_code
+        pkce: s256
+      credential_fields:
+      - field_id: client_id
+        value_type: text
+        required: true
+        secret: false
+        change_policy: reauthorization_required
+        label: Client ID
+        help_text: The Client ID of your application at apps.developer.allegro.pl.allegrosandbox.pl.
+        autocomplete: 'off'
+        validation:
+          min_length: 8
+          max_length: 128
+      - field_id: client_secret
+        value_type: secret
+        required: true
+        secret: true
+        change_policy: runtime_revalidate
+        label: Client Secret
+        help_text: The Client Secret of the same application.
+        autocomplete: 'off'
+        validation:
+          min_length: 8
+          max_length: 512
+      authorization_endpoint:
+        url: https://allegro.pl.allegrosandbox.pl/auth/oauth/authorize
+      token_endpoint:
+        url: https://allegro.pl.allegrosandbox.pl/auth/oauth/token
+        client_auth_method: client_secret_basic
+      callback_id: oauth_authorization
+      authorization_intents:
+      - intent_id: connect
+        static_parameters:
+          prompt: confirm
+      post_connect_action_id: verify_identity
+    connection_types: contracts/connection_types.yaml
+    operation_manifest: contracts/operation_manifest.yaml
+    step_ui_manifest: contracts/step_ui_manifest.yaml
+    artifact_policies: contracts/artifact_policies.yaml
+entrypoint:
+  mode: subprocess
+  command:
+  - python3
+  - main.py
+  timeout_seconds: 600
+health:
+  command:
+  - python3
+  - health.py
+  timeout_seconds: 5
+ui_manifest: ui/ui_manifest.yaml
+action_manifest: ui/actions/actions.yaml
+python_requirements: []

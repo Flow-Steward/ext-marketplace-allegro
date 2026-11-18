@@ -1,0 +1,15 @@
+version: '1'
+pages:
+- ref: pages/setup-guide.yaml
+- ref: pages/connection.yaml
+- ref: pages/connection-sandbox.yaml
+- ref: pages/allegro-api.yaml
+- ref: pages/allegro-api-offers.yaml
+- ref: pages/allegro-api-products.yaml
+- ref: pages/allegro-api-pricing.yaml
+- ref: pages/allegro-api-orders.yaml
+- ref: pages/allegro-api-delivery.yaml
+- ref: pages/allegro-api-account.yaml
+- ref: pages/coverage.yaml
+- ref: pages/changelog.yaml
+- ref: pages/support.yaml

@@ -1,0 +1,90 @@
+"""main.py and health.py as the host runs them: a subprocess, JSON in and out."""
+
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+from typing import Any
+
+import main
+from support import BUNDLE, TOKEN, payload
+
+
+def invoke(request: Any) -> tuple[int, dict[str, Any]]:
+    proc = subprocess.run(
+        [sys.executable, "main.py"],
+        cwd=BUNDLE,
+        input=json.dumps(request) if not isinstance(request, bytes) else request.decode(),
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+    return proc.returncode, json.loads(proc.stdout)
+
+
+def test_a_test_mode_write_answers_without_network() -> None:
+    request = payload(
+        "update_stock_and_prices",
+        {"rows": [{"offer_id": "1", "quantity": 3}], "batch_key": "k"},
+        test_mode=True,
+    )
+    code, response = invoke(request)
+    assert code == 0, response
+    assert response["definitely_no_external_effect"] is True
+    assert TOKEN not in json.dumps(response)
+
+
+def test_a_price_with_many_digits_reaches_the_checks_exactly() -> None:
+    raw = (
+        '{"mode":"action","contract_version":"extension_host_v2","runtime_context":{"test_mode":true,'
+        '"group_id":null,"for_each_id":null,"step_id":"s","step_execution_id":"e"},'
+        '"action":{"action_id":"update_stock_and_prices","input":{"batch_key":"k","rows":'
+        '[{"offer_id":"1","price":1234567.10}]},"target":{"connection":{"connection_id":"c",'
+        '"connection_type":"allegro","secrets":{"access_token":"' + TOKEN + '"}}}}}'
+    )
+    code, response = invoke(raw.encode())
+    assert code == 0, response
+    assert response["result"]["commands"][0]["value"] == "1234567.10"
+
+
+def test_an_unknown_operation_is_refused() -> None:
+    code, response = invoke(payload("drop_everything"))
+    assert code == 2
+    assert response["error_code"] == "unsupported_operation"
+
+
+def test_a_request_that_is_not_json_is_refused() -> None:
+    code, response = invoke(b"{not json")
+    assert code == 2
+    assert response["error_code"] == "invalid_payload"
+
+
+def test_the_last_resort_answer_keeps_the_facts_of_a_write() -> None:
+    huge = {
+        "ok": True,
+        "result": {"id": "1", "blob": "x" * 6_000_000},
+        "external_effect_status": "succeeded",
+        "definitely_no_external_effect": False,
+    }
+    final, _ = main._bounded_serialized_response(huge)
+    assert final["error_code"] == "response_too_large"
+    assert final["external_effect_status"] == "succeeded"
+    assert final["definitely_no_external_effect"] is False
+    assert final["result"] == {"id": "1"}
+
+
+def test_control_characters_are_removed_from_the_output() -> None:
+    final, _ = main._bounded_serialized_response({"ok": True, "result": {"t": "a\x00b"}})
+    assert final["result"]["t"] == "a b" and final["output_sanitized"] is True
+
+
+def test_health_answers_without_network() -> None:
+    proc = subprocess.run(
+        [sys.executable, "health.py"], cwd=BUNDLE, capture_output=True, text=True, check=True
+    )
+    report = json.loads(proc.stdout)
+    assert report["ok"] is True
+    assert report["extension_id"] == "flowsteward.allegro"
+    assert report["declared_operations"] == 277

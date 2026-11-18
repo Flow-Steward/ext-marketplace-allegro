@@ -1,0 +1,16 @@
+page_id: changelog
+title: Changelog
+description: What changed in each release of this extension.
+components:
+- component_id: changelog_entries
+  type: markdown
+  title: Release history
+  body: |
+    ## 0.1.0 — 2026-11-18
+
+    First release, built on the Allegro REST API specification downloaded 2026-11-18 (OpenAPI 3.0.0, SHA-256 `f82541bb821c050d50f27792705090acfa4cb8d4f9796b60463cefc79fea14b9`).
+
+    - Every one of the 270 documented operations is a step: offers and batch offer changes, products and categories, pricing and promotion, orders, returns, disputes and messages, shipping and delivery, account and fulfillment.
+    - Everyday steps: Test connection, Get all my offers, Update stock and prices, Get stock and price update results, Get orders and Get order events.
+    - Connections are Allegro or Allegro Sandbox accounts, authorized through your Allegro application; Flow Steward keeps and renews the authorization.
+    - Amounts are exact decimals. Changes are sent once and never retried automatically; test runs never send them.
