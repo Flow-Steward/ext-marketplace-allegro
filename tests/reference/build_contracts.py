@@ -1248,8 +1248,10 @@ _Dumper.add_representer(str, _str)
 def render(path: str, value: Any) -> str:
     if path.endswith(".json"):
         return json.dumps(value, ensure_ascii=False, indent=1, sort_keys=True) + "\n"
-    text = yaml.dump(value, Dumper=_Dumper, sort_keys=False, allow_unicode=True, width=100)
-    return text if path == "extension.yaml" else HEADER + text
+    if path == "extension.yaml":
+        # The form `flow-steward extensions lock-deps` writes, so it changes nothing.
+        return yaml.safe_dump(value, sort_keys=False, allow_unicode=True)
+    return HEADER + yaml.dump(value, Dumper=_Dumper, sort_keys=False, allow_unicode=True, width=100)
 
 
 def main(argv: list[str]) -> int:

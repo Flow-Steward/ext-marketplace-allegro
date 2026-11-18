@@ -8,10 +8,16 @@ version: 0.1.0
 release_stage: active
 billing_mode: free
 display_name: Allegro
-description: |-
-  Connect workflows to Allegro, the Polish online marketplace, through the Allegro REST API. Everyday steps read all your offers, update stock and prices of many offers at once and read the outcome, and read orders and order events.
+description: 'Connect workflows to Allegro, the Polish online marketplace, through
+  the Allegro REST API. Everyday steps read all your offers, update stock and prices
+  of many offers at once and read the outcome, and read orders and order events.
 
-  Every one of the 270 documented operations of the Allegro REST API has its own step: offers and batch changes, products and categories, pricing and promotion, orders, returns, disputes and messages, shipping and delivery, account and fulfillment. Amounts are exact decimals. A connection is one Allegro or Allegro Sandbox account, authorized through your own Allegro application.
+
+  Every one of the 270 documented operations of the Allegro REST API has its own step:
+  offers and batch changes, products and categories, pricing and promotion, orders,
+  returns, disputes and messages, shipping and delivery, account and fulfillment.
+  Amounts are exact decimals. A connection is one Allegro or Allegro Sandbox account,
+  authorized through your own Allegro application.'
 vendor:
   name: Flow Steward
   support_url: https://github.com/Flow-Steward/ext-marketplace-allegro/issues
@@ -25,13 +31,15 @@ listing:
   - e-commerce
   - offers
   - orders
-  summary: Read and update Allegro offers, stock and prices, orders, returns, shipments and messages.
+  summary: Read and update Allegro offers, stock and prices, orders, returns, shipments
+    and messages.
   categories:
   - sales
   - inventory
   - orders
-  setup_summary: Register an application at apps.developer.allegro.pl, add its Client ID and Client Secret
-    to the connection, sign in to Allegro and run the connection test.
+  setup_summary: Register an application at apps.developer.allegro.pl, add its Client
+    ID and Client Secret to the connection, sign in to Allegro and run the connection
+    test.
 features:
 - tool
 - action
@@ -47,8 +55,8 @@ machine_auth:
   - artifact:write
 account_scope:
   scope_type: project
-  description: Each authorized Allegro account is a project connection; a project may hold several, for
-    example a production account and a Sandbox account.
+  description: Each authorized Allegro account is a project connection; a project
+    may hold several, for example a production account and a Sandbox account.
 egress:
   hosts:
   - api.allegro.pl
@@ -643,7 +651,8 @@ runtime:
     oauth_providers:
     - provider_id: allegro
       display_name: Allegro
-      description: Sign in to Allegro and allow your Allegro application to act for the account.
+      description: Sign in to Allegro and allow your Allegro application to act for
+        the account.
       setup_page_id: connection
       help_page_id: connection
       error_help_anchors:
@@ -688,7 +697,8 @@ runtime:
       post_connect_action_id: verify_identity
     - provider_id: allegro_sandbox
       display_name: Allegro Sandbox
-      description: Sign in to Allegro Sandbox and allow your Allegro application to act for the account.
+      description: Sign in to Allegro Sandbox and allow your Allegro application to
+        act for the account.
       setup_page_id: connection-sandbox
       help_page_id: connection-sandbox
       error_help_anchors:
