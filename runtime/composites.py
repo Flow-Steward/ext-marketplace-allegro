@@ -27,7 +27,7 @@ from typing import Any
 from . import budget, errors, files, generic, nesting
 from .context import Context
 from .errors import ExtensionError, invalid
-from .params import decimal, integer, text
+from .params import date_time, decimal, integer, text
 from .transport import MIN_CALL_WINDOW_SECONDS, DeadlineReached, TooDeep, dumps_json
 
 #: Fixed namespace of the command IDs (never change it: ids must stay reproducible).
@@ -156,13 +156,17 @@ def verify_identity(context: Context) -> dict[str, Any]:
 
 
 class Pages:
-    """Collects the records of a paginated read into the step output or a workflow file."""
+    """Collects the records of a paginated read into the step output or a workflow file.
+
+    The output is measured page by page (``budget.Totals`` added up), so a long list
+    costs one walk over each record, not one over everything read so far."""
 
     def __init__(self, to_file: bool, limit: int) -> None:
         self.to_file = to_file
         self.limit = limit
         self.items: list[Any] = []
         self.size = 2
+        self.totals = budget.Totals(nodes=4, size=64)
         self.warnings: list[str] = []
         self.complete = False
 
@@ -175,10 +179,22 @@ class Pages:
             self.size = size
             self.items += page
             return True
-        if not budget.fits({key: self.items + page, "warnings": self.warnings}):
+        added = self.totals
+        for item in page:
+            cost = budget.measure(item)
+            # One level for the list, one for the result object.
+            added = added + budget.Totals(cost.nodes, cost.depth + 2, cost.size + 1)
+        if not added.within():
             return False
+        self.totals = added
         self.items += page
         return True
+
+
+#: Read failures after which the pages already read are returned (HTTP 429, 408 and
+#: 5xx, network failures and time-outs of a read): the read can be continued later.
+def _transient(exc: ExtensionError) -> bool:
+    return exc.retryable is True
 
 
 def _finish(context: Context, pages: Pages, key: str, extra: dict[str, Any]) -> dict[str, Any]:
@@ -220,6 +236,7 @@ def _offset_pages(
     seen: set[str] = set()
     first = True
     stopped = ""
+    size = page_size
     while True:
         if len(pages.items) >= most:
             stopped = f"the {most} asked for were read"
@@ -227,13 +244,18 @@ def _offset_pages(
         if not first and not _room(context):
             stopped = "time ran out"
             break
-        limit = min(page_size, most - len(pages.items))
+        limit = min(size, most - len(pages.items))
         try:
             data = _read(context, operation_id, {**query, "limit": limit, "offset": offset})
         except DeadlineReached:
             if first:
                 raise
             stopped = "time ran out"
+            break
+        except ExtensionError as exc:
+            if first or not _transient(exc):
+                raise
+            stopped = f"Allegro could not give the next page ({exc.code}: {errors.safe_text(exc.message, 300)})"
             break
         if not isinstance(data, Mapping) or not isinstance(data.get(list_key), list):
             raise _bad(shown, f"has no {list_key} list")
@@ -248,18 +270,22 @@ def _offset_pages(
                 raise _bad(shown, "lists a record without an id")
             if ident in seen:
                 continue
-            seen.add(ident)
             fresh.append(item)
+        if not pages.take(fresh, out_key):
+            if first and limit > 1:
+                # The first page does not fit: ask again for half as many records.
+                size = max(1, limit // 2)
+                continue
+            if first:
+                raise budget.too_large()
+            stopped = "the output is full" if not to_file else "the file is full"
+            break
+        seen.update(item["id"] for item in fresh)
         if len(fresh) != len(page):
             pages.warnings.append(
                 f"{len(page) - len(fresh)} records appeared twice because the list changed while "
                 "it was read; each is returned once"
             )
-        if not pages.take(fresh, out_key):
-            if first:
-                raise budget.too_large()
-            stopped = "the output is full" if not to_file else "the file is full"
-            break
         first = False
         offset += len(page)
         if len(page) < limit or (total is not None and offset >= total) or not page:
@@ -378,8 +404,10 @@ def list_orders(context: Context) -> dict[str, Any]:
         checked = text(value, name, max_length=100)
         if name in _ORDER_CHOICES and checked not in _ORDER_CHOICES[name]:
             raise invalid(f"{name} must be one of: {', '.join(_ORDER_CHOICES[name])}")
-        if name.endswith(("_from", "_to")) and not _DATE_TIME_RE.fullmatch(checked):
-            raise invalid(f"{name} must be a date and time such as 2026-11-01T00:00:00Z")
+        if name.endswith(("_from", "_to")):
+            if not _DATE_TIME_RE.fullmatch(checked):
+                raise invalid(f"{name} must be a date and time such as 2026-11-01T00:00:00Z")
+            date_time(checked, name)
         query[wire_input] = checked
     return _offset_pages(
         context,
@@ -415,6 +443,7 @@ def list_order_events(context: Context) -> dict[str, Any]:
     last = after
     first = True
     stopped = ""
+    size = 1000
     while True:
         if len(pages.items) >= most:
             stopped = f"the {most} asked for were read"
@@ -422,7 +451,7 @@ def list_order_events(context: Context) -> dict[str, Any]:
         if not first and not _room(context):
             stopped = "time ran out"
             break
-        limit = min(1000, most - len(pages.items))
+        limit = min(size, most - len(pages.items))
         query: dict[str, Any] = {"limit": limit}
         if last:
             query["from"] = last
@@ -435,6 +464,11 @@ def list_order_events(context: Context) -> dict[str, Any]:
                 raise
             stopped = "time ran out"
             break
+        except ExtensionError as exc:
+            if first or not _transient(exc):
+                raise
+            stopped = f"Allegro could not give the next page ({exc.code}: {errors.safe_text(exc.message, 300)})"
+            break
         if not isinstance(data, Mapping) or not isinstance(data.get("events"), list):
             raise _bad("GET /order/events", "has no events list")
         page = data["events"]
@@ -444,6 +478,10 @@ def list_order_events(context: Context) -> dict[str, Any]:
         if last is not None and last in ids:
             raise _bad("GET /order/events", f"repeats the event {last} it was asked to read after")
         if not pages.take(page, "events"):
+            if first and limit > 1:
+                # The first page does not fit: ask again for half as many events.
+                size = max(1, limit // 2)
+                continue
             if first:
                 raise budget.too_large()
             stopped = "the output is full"
@@ -497,6 +535,7 @@ class Command:
             "currency": self.currency,
             "offers_count": len(self.offers),
             "status": status,
+            "outcome": None,
         }
 
 
@@ -602,7 +641,11 @@ def update_stock_and_prices(context: Context) -> dict[str, Any]:
             return _partial(done, commands, command, "the step ran out of time", warnings)
         except ExtensionError as exc:
             if exc.http_status == 409 and exc.definitely_no_external_effect:
-                done.append(command.summary("already_registered"))
+                # Allegro already has this command ID: nothing was sent again. Its
+                # outcome is read back for this row.
+                row = command.summary("already_registered")
+                row["outcome"] = _outcome_of(context, command)
+                done.append(row)
                 continue
             if exc.definitely_no_external_effect and done:
                 # A definite refusal after confirmed commands: those stay registered.
@@ -616,9 +659,10 @@ def update_stock_and_prices(context: Context) -> dict[str, Any]:
                 base=exc,
             ) from None
         try:
-            echoed = context.transport.json(answer)
-        except ValueError:
-            echoed = None
+            echoed = generic.confirmed_data(context, entry, answer, plan.shown, warnings)
+        except ExtensionError as exc:
+            # A documented success with a body that is not the documented JSON.
+            raise _midway(done, commands, command, exc.message, unsure=True, base=exc) from None
         if not isinstance(echoed, Mapping) or echoed.get("id") != command.command_id:
             warnings.append(
                 f"Allegro registered command {command.command_id} (HTTP {answer.status}) but its "
@@ -635,7 +679,31 @@ def update_stock_and_prices(context: Context) -> dict[str, Any]:
         "processing": "accepted",
         "applied": False,
         "check": {"operation_id": "get_stock_and_price_update_results", "location": None},
+        "retry_after_seconds": None,
         "warnings": warnings,
+    }
+
+
+def _outcome_of(context: Context, command: Command) -> dict[str, Any] | str:
+    """How far Allegro got with a command registered by an earlier run (its summary);
+    ``unknown`` when it cannot be read now."""
+    if not _room(context):
+        return "unknown"
+    summary_step = _REPORT_STEPS[command.kind][0]
+    try:
+        summary = _read(context, summary_step, {"command_id": command.command_id})
+        if not isinstance(summary, Mapping) or not isinstance(summary.get("taskCount"), Mapping):
+            return "unknown"
+        counts = summary["taskCount"]
+        total, success, failed = (_count(counts.get(k, 0)) for k in ("total", "success", "failed"))
+    except (ExtensionError, DeadlineReached):
+        return "unknown"
+    return {
+        "completed": summary.get("completedAt") not in (None, ""),
+        "total": total,
+        "success": success,
+        "failed": failed,
+        "waiting": max(0, total - success - failed),
     }
 
 
@@ -643,6 +711,10 @@ def _say_again(done: list[dict[str, Any]], warnings: list[str]) -> None:
     again = sum(1 for c in done if c["status"] == "already_registered")
     if again:
         warnings.append(
+            f"This batch key was already used: {again} of {len(done)} commands were registered "
+            "by an earlier run and nothing was sent again for them (their outcome is in "
+            "outcome; unknown when it could not be read). Use a new batch key for every "
+            "update. "
             f"{again} of {len(done)} commands were already registered by an earlier run with the "
             "same batch key and rows; they were not applied again"
         )
@@ -681,6 +753,7 @@ def _partial(
         "processing": "accepted",
         "applied": None,
         "check": {"operation_id": "get_stock_and_price_update_results", "location": None},
+        "retry_after_seconds": None,
         "warnings": warnings,
     }
 

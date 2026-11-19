@@ -314,16 +314,27 @@ def test_an_undocumented_success_status_is_not_a_registered_command() -> None:
 
 
 def test_a_command_already_registered_is_not_applied_again() -> None:
-    fake = FakeAllegro(refuse(409), echo, refuse(409))
+    summary = ok({"id": "c", "taskCount": {"total": 2, "success": 2, "failed": 0}})
+    fake = FakeAllegro(refuse(409), summary, echo, refuse(409), refuse(500, errors_holder()))
     result = run("update_stock_and_prices", {"rows": ROWS, "batch_key": "run-1"}, fake)
     assert result["ok"] is True
-    assert [c["status"] for c in result["result"]["commands"]] == [
+    rows = result["result"]["commands"]
+    assert [c["status"] for c in rows] == [
         "already_registered",
         "registered",
         "already_registered",
     ]
-    assert len(fake.calls) == 3
+    assert rows[0]["outcome"] == {
+        "completed": False,
+        "total": 2,
+        "success": 2,
+        "failed": 0,
+        "waiting": 0,
+    }
+    assert rows[1]["outcome"] is None and rows[2]["outcome"] == "unknown"
+    assert [c.verb for c in fake.calls] == ["PUT", "GET", "PUT", "PUT", "GET"]
     assert "already registered" in result["result"]["warnings"][-1]
+    assert "Use a new batch key for every update" in result["result"]["warnings"][-1]
 
 
 def test_a_refusal_of_the_first_command_changes_nothing_and_stops() -> None:

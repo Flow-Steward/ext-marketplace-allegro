@@ -143,10 +143,11 @@ def error_response(
     entry: dict[str, object] = {"code": safe_code, "message": bounded}
     response: dict[str, object] = {
         "ok": False,
-        "result": {},
+        "result": {"warnings": []},
         "error_code": safe_code,
         "error": bounded,
         "errors": [entry],
+        "warnings": [],
     }
     if safe_code in AMBIGUOUS_ERROR_CODES:
         response["external_effect_status"] = TIMEOUT_UNKNOWN

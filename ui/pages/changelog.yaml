@@ -18,6 +18,12 @@ components:
     - Requests nested deeper than 32 levels are refused before they are read; Allegro answers nested deeper than 48 levels are not read: a read fails with `invalid_response`, a confirmed change keeps its status, address and `processing` with `data` empty and a warning.
     - When a confirmed change's result is too large for the step output, the step still succeeds with the result cut to its identifiers and short values and a warning; the output budget measures amounts as they are written.
     - The `Location` and other returned headers have the access token removed before they reach the result.
+    - Output budget, as the host (Flow Steward 0.9.16) measures it: at most 3.5 MB written, 2 million values and keys and 48 nesting levels; strings and rows are no longer counted, so a page of 1000 offers or 100 orders fits. When the first page of Get all my offers, Get orders or Get order events does not fit, it is asked again with half as many records; when a later page does not fit, the step returns what fits with where to continue.
+    - Get all my offers, Get orders and Get order events: a rate limit, a server error or a network failure after the first page returns the pages already read with `complete` false, where to continue and a warning.
+    - A change Allegro confirmed with a documented success status stays confirmed when its answer is too large, too late or cut off: the step returns the status, address and `processing` with `data` empty and a warning. Where the specification documents only JSON for that status, a body of another type is an unknown outcome (`invalid_response`), to be checked in Allegro.
+    - Steps that change data return `retry_after_seconds`: the wait Allegro asks for with HTTP 202.
+    - Update stock and prices: with a batch key already used, Allegro answers that the command exists; nothing is sent again, the step reads that command's outcome into `outcome` (or `unknown`) and asks for a new batch key for every update. However the result is cut for the output, `check` and each command's ID and status are kept.
+    - An impossible date or time (2026-02-31, 25:00) is refused before anything is sent. Error answers carry an empty `warnings` list. A CSV file from Allegro has the access token removed like any answer; binary files are saved as sent.
 
     ## 0.1.0 — 2026-11-18
 

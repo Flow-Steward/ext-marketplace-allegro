@@ -271,9 +271,30 @@ def test_a_read_answer_that_is_not_json_is_refused_and_a_write_keeps_it_as_text(
         result["error_code"] == "invalid_response"
         and result["definitely_no_external_effect"] is True
     )
-    result = run("edit_offer", {"offer_id": "1", "body": {"a": 1}}, FakeAllegro(raw(200, b"done")))
+    # Where the specification documents no body for the status, a text body is kept.
+    result = run(
+        "assign_tags_to_offer",
+        {"offer_id": "1", "body": {"tags": []}},
+        FakeAllegro(raw(200, b"done", content_type="text/plain")),
+    )
     assert result["ok"] is True and result["result"]["data"] == "done"
     assert "not JSON" in result["result"]["warnings"][0]
+
+
+@pytest.mark.parametrize(
+    ("body", "content_type"),
+    [(b"done", PUBLIC), (b'{"id": "1"}', "text/html"), (b"<html>login</html>", "text/html")],
+)
+def test_a_write_documented_as_json_with_another_body_is_unknown(
+    body: bytes, content_type: str
+) -> None:
+    fake = FakeAllegro(raw(200, body, content_type=content_type))
+    result = run("edit_offer", {"offer_id": "1", "body": {"a": 1}}, fake)
+    assert result["ok"] is False
+    assert result["error_code"] == "invalid_response"
+    assert result["external_effect_status"] == "timeout_unknown"
+    assert result["definitely_no_external_effect"] is False
+    assert "not the JSON the specification documents" in result["error"]
 
 
 def test_http_202_is_accepted_not_applied_and_names_its_check() -> None:
@@ -352,7 +373,7 @@ def test_the_etag_and_if_match_round_trip() -> None:
 
 
 def test_a_read_too_large_for_the_output_is_refused() -> None:
-    offers = [{"id": str(i), "name": "x" * 50} for i in range(30000)]
+    offers = [{"id": str(i), "name": "x" * 150} for i in range(30000)]
     result = run("get_offers_page", {}, FakeAllegro(ok({"offers": offers})))
     assert result["error_code"] == "response_too_large"
     assert result["definitely_no_external_effect"] is True

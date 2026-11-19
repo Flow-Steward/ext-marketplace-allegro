@@ -294,6 +294,10 @@ def node(schema: dict[str, Any], *, required: bool) -> dict[str, Any]:
             out["min_length"] = int(schema["minLength"])
         if schema.get("enum"):
             out["allowed"] = [str(v) for v in schema["enum"]]
+        if schema.get("format") == "date-time":
+            out["format"] = "date-time"
+        elif str(schema.get("format") or "").startswith("<day-name>"):
+            out["format"] = "http-date"
     return out
 
 
@@ -355,6 +359,16 @@ def answer_of(op: dict[str, Any]) -> tuple[str, str | None, list[str]]:
     if binary:
         return "file", ", ".join(binary), []
     return "json", PUBLIC, []
+
+
+def json_success(op: dict[str, Any]) -> list[str]:
+    """The 2xx statuses whose documented answer is JSON only: a non-empty body of another
+    type (or one that does not start as JSON) is then not a documented answer."""
+    return sorted(
+        code
+        for code, resp in op["responses"].items()
+        if code[:1] == "2" and resp["content"] and all(t in JSON_TYPES for t in resp["content"])
+    )
 
 
 def documented_refusals(op: dict[str, Any]) -> dict[str, bool]:
@@ -584,6 +598,7 @@ def registry_entry(op: dict[str, Any], step_id: str, ids: dict[str, str]) -> dic
         "headers": headers,
         "body": request,
         "success": sorted(c for c in op["responses"] if c[:1] in {"2", "3"}),
+        "json_success": json_success(op),
         "refusals": documented_refusals(op),
     }
     processing = processing_of(op, ids)

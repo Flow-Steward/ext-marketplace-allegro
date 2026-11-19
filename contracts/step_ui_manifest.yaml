@@ -77,8 +77,9 @@ forms:
     label: Batch key
     widget_type: text
     required: true
-    help_text: Your name for this batch, for example the export run ID. The same rows with the same key
-      are never applied twice.
+    help_text: 'Your name for this batch: use a new key for every update, for example the export run ID.
+      The same rows with a key already used are never applied again: Allegro answers that the command
+      exists, nothing is sent again and the step reads that command''s outcome.'
 - operation_id: get_stock_and_price_update_results
   title: Get stock and price update results
   fields:

@@ -231,12 +231,17 @@ class SlowBody:
         return None
 
 
-def test_the_step_limit_covers_reading_the_body_of_a_write() -> None:
+def test_a_write_confirmed_by_its_status_keeps_its_facts_when_its_body_is_late() -> None:
     now = [0.0]
     fake = FakeAllegro(SlowBody(now))
     result = run(EDIT, EDIT_INPUT, fake, clock=lambda: now[0])
-    assert result["error_code"] == "timeout_unknown"
-    assert result["definitely_no_external_effect"] is False
+    # HTTP 200 is documented: the change is confirmed before the body arrives.
+    assert result["ok"] is True, result
+    assert result["external_effect_status"] == "succeeded"
+    out = result["result"]
+    assert out["status"] == 200 and out["data"] is None
+    assert out["processing"] == "completed"
+    assert "did not arrive in time" in out["warnings"][0]
 
 
 def test_the_step_limit_covers_reading_the_body_of_a_read() -> None:
@@ -262,7 +267,10 @@ def test_a_too_large_answer_to_a_write_is_unknown_and_to_a_read_is_not(
 
     monkeypatch.setattr(generic, "MAX_ANSWER_BYTES", 1000)
     result = run(EDIT, EDIT_INPUT, FakeAllegro(big))
-    assert result["external_effect_status"] == "timeout_unknown"
+    # The documented 200 confirmed the change: kept, without the body.
+    assert result["ok"] is True and result["external_effect_status"] == "succeeded"
+    assert result["result"]["data"] is None
+    assert "is larger than" in result["result"]["warnings"][0]
     big = raw(200, b'{"a":"' + b"x" * 5000 + b'"}')
     result = run("get_my_account", {}, FakeAllegro(big))
     assert (

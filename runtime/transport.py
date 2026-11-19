@@ -76,6 +76,9 @@ class Answer:
     raw: bytes
     content_type: str
     headers: dict[str, str] = field(default_factory=dict)
+    #: Why the body of a confirmed write was not read (too large, too late); then
+    #: ``raw`` is empty and only the status and the headers are known.
+    unread: str | None = None
 
     @property
     def empty(self) -> bool:
@@ -118,6 +121,9 @@ class AllegroTransport:
         self.clock = clock
         self._timeout_seconds = timeout_seconds
         self._call_timeout = timeout_seconds
+        #: The token's forms, computed once for the connection (scrub runs per value).
+        self._forms = connection.secret_forms()
+        self._forms_bytes = tuple(form.encode("utf-8") for form in self._forms)
         #: True once a request that can change data may have left this process.
         self.mutated = False
         #: True once Allegro confirmed a change in this invocation.
@@ -148,7 +154,7 @@ class AllegroTransport:
     def scrub(self, value: Any) -> Any:
         """The token removed from every text and key of a parsed answer."""
         if isinstance(value, str):
-            for form in self._connection.secret_forms():
+            for form in self._forms:
                 if form in value:
                     value = value.replace(form, "[redacted]")
             return value
@@ -159,8 +165,7 @@ class AllegroTransport:
         return value
 
     def scrub_bytes(self, raw: bytes) -> bytes:
-        for form in self._connection.secret_forms():
-            encoded = form.encode("utf-8")
+        for encoded in self._forms_bytes:
             if encoded in raw:
                 raw = raw.replace(encoded, b"[redacted]")
         return raw
@@ -200,13 +205,14 @@ class AllegroTransport:
         if mutating:
             self.mutated = True
         expires = None if self.deadline is None else self.deadline + MIN_CALL_WINDOW_SECONDS
+        progress: dict[str, Any] = {}
         if expires is None:
-            return self._exchange(request, call, mutating)
+            return self._exchange(request, call, mutating, progress)
         outcome: dict[str, Any] = {}
 
         def work() -> None:
             try:
-                outcome["value"] = self._exchange(request, call, mutating)
+                outcome["value"] = self._exchange(request, call, mutating, progress)
             except BaseException as exc:  # handed to the caller below
                 outcome["error"] = exc
 
@@ -214,12 +220,18 @@ class AllegroTransport:
         worker.start()
         worker.join(max(0.0, expires - self.clock()))
         if worker.is_alive():
+            confirmed = progress.get("confirmed")
+            if isinstance(confirmed, Answer):
+                # The status confirmed the write before its body finished arriving.
+                return confirmed
             _late(mutating)
         if "error" in outcome:
             raise outcome["error"]
         return outcome["value"]
 
-    def _exchange(self, request: Request, call: Call, mutating: bool) -> Answer:
+    def _exchange(
+        self, request: Request, call: Call, mutating: bool, progress: dict[str, Any]
+    ) -> Answer:
         expires = None if self.deadline is None else self.deadline + MIN_CALL_WINDOW_SECONDS
         try:
             with self._opener(
@@ -227,14 +239,41 @@ class AllegroTransport:
             ) as response:
                 status = int(getattr(response, "status", 0) or getattr(response, "code", 0) or 0)
                 headers = getattr(response, "headers", None) or {}
-                raw = read_bounded(
-                    response,
-                    call.limit,
-                    mutating=mutating,
-                    expires=expires,
-                    clock=self.clock,
-                    per_read=self._call_timeout,
-                )
+                confirmed: Answer | None = None
+                if mutating and 200 <= status < 300 and str(status) in call.success:
+                    # The status is known before the body: a documented success confirms
+                    # the write whatever happens to the body afterwards.
+                    confirmed = Answer(
+                        status,
+                        b"",
+                        _media(headers),
+                        _kept_headers(headers, self.scrub),
+                        unread="did not arrive in time",
+                    )
+                    progress["confirmed"] = confirmed
+                try:
+                    raw = read_bounded(
+                        response,
+                        call.limit,
+                        mutating=mutating,
+                        expires=expires,
+                        clock=self.clock,
+                        per_read=self._call_timeout,
+                    )
+                except ExtensionError as exc:
+                    if confirmed is None:
+                        raise
+                    confirmed.unread = (
+                        f"is larger than the {call.limit // (1024 * 1024)} MB this extension reads"
+                        if exc.code == errors.RESPONSE_TOO_LARGE
+                        else "did not arrive in time"
+                    )
+                    return confirmed
+                except (OSError, http.client.HTTPException):
+                    if confirmed is None:
+                        raise
+                    confirmed.unread = "was cut off by the connection"
+                    return confirmed
         except HTTPError as exc:
             try:
                 body = exc.read(MAX_ERROR_BODY_BYTES)
@@ -280,8 +319,7 @@ class AllegroTransport:
             )
         if str(status) not in call.success:
             raise undocumented(status, call, mutating=mutating)
-        kind = str(headers.get("Content-Type") or "") if hasattr(headers, "get") else ""
-        return Answer(status, raw, kind.split(";")[0].strip().lower(), kept)
+        return Answer(status, raw, _media(headers), kept)
 
     # -- refusals ------------------------------------------------------------
 
@@ -423,6 +461,11 @@ def unknown(message: str, code: str, status: int | None) -> ExtensionError:
         external_effect_status="timeout_unknown",
         http_status=status,
     )
+
+
+def _media(headers: Any) -> str:
+    kind = str(headers.get("Content-Type") or "") if hasattr(headers, "get") else ""
+    return kind.split(";")[0].strip().lower()
 
 
 def _kept_headers(headers: Any, scrub: Callable[[Any], Any]) -> dict[str, str]:

@@ -288,8 +288,9 @@ operations:
     required: true
     schema:
       title: Batch key
-      description: Your name for this batch, for example the export run ID. The same rows with the same
-        key are never applied twice.
+      description: 'Your name for this batch: use a new key for every update, for example the export run
+        ID. The same rows with a key already used are never applied again: Allegro answers that the command
+        exists, nothing is sent again and the step reads that command''s outcome.'
       type: string
       minLength: 1
       maxLength: 100
@@ -303,7 +304,9 @@ operations:
         additionalProperties: true
       description: 'Each command: command_id, kind (quantity or price), value, currency, offers_count
         and status: registered, already_registered, refused (Allegro certainly refused it after earlier
-        commands were registered) or not_sent.'
+        commands were registered) or not_sent; and outcome: for already_registered, how far Allegro got
+        with the command registered earlier (completed, total, success, failed, waiting) or unknown when
+        it could not be read; empty for the others.'
   - name: offers_count
     value_type: integer
     schema:
@@ -341,6 +344,14 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: &id007
+      - integer
+      - 'null'
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: warnings
     value_type: array
     schema:
@@ -361,10 +372,11 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: &id007
+  error_codes: &id008
   - invalid_payload
   - invalid_host_envelope
   - invalid_connection
@@ -1658,6 +1670,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -1693,12 +1711,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: change_promotion_packages_of_offer
   display_name: Change promotion packages of offer
   description: Use this resource to modify offer promotion packages. Needs the Allegro permission allegro:api:sale:offers:write.
@@ -1788,6 +1807,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -1823,12 +1848,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: change_buy_now_price_of_offer
   display_name: Change Buy Now price of offer
   description: 'Use this resource to change the Buy Now price in a single offer. Allegro registers the
@@ -1928,6 +1954,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -1963,12 +1995,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: publish_or_end_offers
   display_name: Publish or end offers
   description: 'Use this resource to modify multiple offers publication at once. This resource is rate
@@ -2061,6 +2094,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -2096,12 +2135,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: change_promotion_packages_of_many_offers
   display_name: Change promotion packages of many offers
   description: 'Use this resource to modify promotion packages on multiple offers at once. Allegro registers
@@ -2193,6 +2233,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -2228,12 +2274,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: edit_offer
   display_name: Edit offer
   description: 'Use this resource to edit an offer. This resource allows you to edit each field independently,
@@ -2329,6 +2376,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -2364,12 +2417,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: delete_draft_offer
   display_name: Delete draft offer
   description: Use this resource to delete a draft offer. Needs the Allegro permission allegro:api:sale:offers:write.
@@ -2450,6 +2504,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -2485,12 +2545,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_offer
   display_name: Get offer
   description: Use this resource to retrieve all data of the particular product-offer. Needs the Allegro
@@ -4224,6 +4285,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -4259,12 +4326,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: change_automatic_pricing_of_many_offers
   display_name: Change automatic pricing of many offers
   description: 'Use this resource to modify the automatic pricing rules of multiple offers at the same
@@ -4350,6 +4418,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -4385,12 +4459,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: modify_many_offers
   display_name: Modify many offers
   description: 'Use this resource to modify multiple offers at once. This resource is rate limited to
@@ -4484,6 +4559,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -4519,12 +4600,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: change_price_of_many_offers
   display_name: Change price of many offers
   description: 'Change price of offers. This resource is rate limited to 150 000 offer changes per hour
@@ -4617,6 +4699,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -4652,12 +4740,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: change_stock_of_many_offers
   display_name: Change stock of many offers
   description: 'Change quantity of multiple offers. This resource is rate limited to 250 000 offer changes
@@ -4750,6 +4839,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -4785,12 +4880,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_offer_translations
   display_name: Get offer translations
   description: Get offer translation for given language or all present. Needs the Allegro permission allegro:api:sale:offers:read.
@@ -4981,6 +5077,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -5016,12 +5118,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: delete_offer_translation
   display_name: Delete offer translation
   description: Delete single element or entire manual translation. Needs the Allegro permission allegro:api:sale:offers:write.
@@ -5132,6 +5235,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -5167,12 +5276,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_offer_tags
   display_name: Get offer tags
   description: 'Use this resource to get a list of tags defined by the specified user (Defaults: limit
@@ -5434,6 +5544,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -5469,12 +5585,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: assign_tags_to_offer
   display_name: Assign tags to offer
   description: Use this resource to assign a tag to offer. Needs the Allegro permission allegro:api:sale:offers:write.
@@ -5564,6 +5681,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -5599,12 +5722,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_offer_tag
   display_name: Update offer tag
   description: Use this resource to update a tag. This resource is rate limited to 1 million changes per
@@ -5695,6 +5819,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -5730,12 +5860,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: delete_offer_tag
   display_name: Delete offer tag
   description: Use this resource to delete the tag. Needs the Allegro permission allegro:api:sale:settings:write.
@@ -5816,6 +5947,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -5851,12 +5988,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_offer_rating
   display_name: Get offer rating
   description: Use this resource to get offer rating. Needs the Allegro permission allegro:api:sale:offers:read.
@@ -6137,6 +6275,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -6172,12 +6316,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: create_offer_attachment
   display_name: Create offer attachment
   description: 'You can attach pdf, jpeg or png files to your offers. We will present them under the offer
@@ -6262,6 +6407,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -6297,12 +6448,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: upload_offer_attachment_file
   display_name: Upload offer attachment file
   description: Upload an offer attachment. This operation should be used after creating an offer attachment
@@ -6404,6 +6556,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -6439,12 +6597,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_seller_classified_ads_statistics
   display_name: Get seller's classified ads statistics
   description: This endpoint returns daily statistics collected for a list of advertisements in a given
@@ -6965,6 +7124,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -7000,12 +7165,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_my_bid
   display_name: Get my bid
   description: Use this resource to retrieve current user's bid information. Needs the Allegro permission
@@ -7180,6 +7346,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -7215,12 +7387,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_category_product_parameters
   display_name: Get category product parameters
   description: Use this resource to get the list of product parameters available in given category. You
@@ -7742,6 +7915,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -7777,12 +7956,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: propose_product_changes
   display_name: Propose product changes
   description: Use this resource to propose changes in product. This resource is limited to 100 suggestions
@@ -7873,6 +8053,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -7908,12 +8094,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_categories
   display_name: Get categories
   description: Use this resource to traverse the Allegro categories tree. It returns the list of the given
@@ -9517,6 +9704,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -9552,12 +9745,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_size_table
   display_name: Update size table
   description: Use this resource to update selected size table. Needs the Allegro permission allegro:api:sale:settings:write.
@@ -9643,6 +9837,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -9678,12 +9878,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_responsible_persons
   display_name: Get responsible persons
   description: Use this resource to get a list of responsible persons for the compliance of the product
@@ -9946,6 +10147,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -9981,12 +10188,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_responsible_person
   display_name: Update responsible person
   description: Use this resource to update the responsible person for the compliance of the product with
@@ -10077,6 +10285,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -10112,12 +10326,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_responsible_producers
   display_name: Get responsible producers
   description: Use this resource to get a list of responsible producers for the compliance of the product
@@ -10380,6 +10595,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -10415,12 +10636,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_responsible_producer
   display_name: Update responsible producer
   description: Use this resource to update the responsible producer for the compliance of the product
@@ -10511,6 +10733,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -10546,12 +10774,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: delete_responsible_producer
   display_name: Delete responsible producer
   description: Use this resource to delete a responsible producer created by you. The responsible producer
@@ -10634,6 +10863,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -10669,12 +10904,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_offer_quotes
   display_name: Get offer quotes
   description: This endpoint returns current offer quotes (listing and promo fees) cycles for authenticated
@@ -11176,6 +11412,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -11211,12 +11453,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_automatic_pricing_rule
   display_name: Update automatic pricing rule
   description: Use this resource to update automatic pricing rule. This resource is rate limited to 5
@@ -11307,6 +11550,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -11342,12 +11591,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: delete_automatic_pricing_rule
   display_name: Delete automatic pricing rule
   description: Use this resource to delete automatic pricing rule. This resource is rate limited to 5
@@ -11429,6 +11679,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -11464,12 +11720,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_allegro_prices_participation
   display_name: Get Allegro Prices participation
   description: Use this resource to retrieve the account participation status for all supported marketplaces
@@ -11801,6 +12058,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -11836,12 +12099,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: exclude_offers_from_allegro_prices
   display_name: Exclude offers from Allegro Prices
   description: 'Use this resource to submit a command to exclude offers from the Allegro Prices program.
@@ -11926,6 +12190,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -11961,12 +12231,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: query_allegro_prices_status_of_offers
   display_name: Query Allegro Prices status of offers
   description: Use this resource to retrieve a list of offers and their status in the Allegro Prices program
@@ -12137,6 +12408,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -12172,12 +12449,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_alle_discount_submission_status
   display_name: Get AlleDiscount submission status
   description: Use this resource to get information about the submit offer command execution status. Needs
@@ -12720,6 +12998,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -12755,12 +13039,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: withdraw_offer_from_alle_discount
   display_name: Withdraw offer from AlleDiscount
   description: 'Use this resource to create a command for withdrawing an offer from specific campaign.
@@ -12841,6 +13126,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -12876,12 +13167,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_badge_campaigns
   display_name: Get badge campaigns
   description: Badge campaigns are another way to promote your offers. You can apply for a badge, which
@@ -13443,6 +13735,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -13478,12 +13776,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_offer_badge
   display_name: Update offer badge
   description: 'This resource allows you to update a campaign badge for the given offer. You can use *Location*
@@ -13585,6 +13884,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -13620,12 +13925,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_promotions
   display_name: Get promotions
   description: 'Get a list of promotions defined by the authorized user and filtered by promotion type.
@@ -13915,6 +14221,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -13950,12 +14262,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_promotion
   display_name: Update promotion
   description: Use this resource to update a promotion by its unique id. It supports editing bundle's
@@ -14047,6 +14360,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -14082,12 +14401,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: deactivate_promotion
   display_name: Deactivate promotion
   description: Use this resource to deactivate the requested promotion. You need to use its unique id.,
@@ -14169,6 +14489,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -14204,12 +14530,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_offer_bundles
   display_name: Get offer bundles
   description: 'You can fetch page of seller''s offer bundles using this endpoint. Paging: To move to
@@ -14493,6 +14820,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -14528,12 +14861,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: delete_offer_bundle
   display_name: Delete offer bundle
   description: Use this resource to delete offer bundle by its unique identifier. Allegro marks this operation
@@ -14615,6 +14949,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -14650,12 +14990,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_flexible_bundles
   display_name: Get flexible bundles
   description: 'You can fetch page of seller''s flexible bundles using this endpoint. Paging: To move
@@ -14882,6 +15223,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -14917,12 +15264,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_flexible_bundle
   display_name: Update flexible bundle
   description: You can update flexible bundle using this resource. Needs the Allegro permission allegro:api:sale:offers:write.
@@ -14997,6 +15345,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -15032,12 +15386,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: delete_flexible_bundle
   display_name: Delete flexible bundle
   description: Use this resource to delete flexible bundle by its unique identifier. Needs the Allegro
@@ -15104,6 +15459,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -15139,12 +15500,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_additional_services_groups
   display_name: Get additional services groups
   description: Use this resource to retrieve a list of groups with additional services available to a
@@ -15483,6 +15845,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -15518,12 +15886,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_additional_services_group
   display_name: Update additional services group
   description: Use this resource to modify existing additional service group. Needs the Allegro permission
@@ -15614,6 +15983,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -15649,12 +16024,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_additional_services_group_translations
   display_name: Get additional services group translations
   description: Use this resource to get translations for additional service group. Needs the Allegro permission
@@ -15850,6 +16226,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -15885,12 +16267,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: delete_additional_services_group_translation
   display_name: Delete additional services group translation
   description: Use this resource to delete the translation for specified additional service group and
@@ -15981,6 +16364,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -16016,12 +16405,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: search_fundraising_campaigns
   display_name: Search fundraising campaigns
   description: 'Use this resource to search fundraising campaigns. Beta in Allegro: it may still change.
@@ -17144,6 +17534,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -17179,12 +17575,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: set_order_serial_numbers
   display_name: Set order serial numbers
   description: Use to set serial numbers in the given line items of seller order. Needs the Allegro permission
@@ -17278,6 +17675,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -17313,12 +17716,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: add_order_invoice
   display_name: Add order invoice
   description: Use to add new invoice metadata. Before you send an invoice file, you need to initialize
@@ -17405,6 +17809,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -17440,12 +17850,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: upload_order_invoice_with_details
   display_name: Upload order invoice with details
   description: Use to add an invoice to the order in a single request - the invoice file together with
@@ -17537,6 +17948,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -17572,12 +17989,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: add_order_billing_document_link
   display_name: Add order billing document link
   description: Used to upload a URL to a billing document. You can add up to 10 links. Needs the Allegro
@@ -17663,6 +18081,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -17698,12 +18122,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: set_order_status
   display_name: Set order status
   description: Use to set seller order status. Needs the Allegro permission allegro:api:orders:write.
@@ -17796,6 +18221,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -17831,12 +18262,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: upload_order_invoice_file
   display_name: Upload order invoice file
   description: Use to upload invoice file to match created invoice metadata. Allegro marks this operation
@@ -17936,6 +18368,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -17971,12 +18409,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_customer_returns
   display_name: Get customer returns
   description: 'Use this resource to get all customer returns filtered by query parameters. This resource
@@ -18504,6 +18943,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -18539,12 +18984,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_disputes_and_claims
   display_name: Get disputes and claims
   description: 'Use this resource to get the list of your disputes and claims ordered by descending opened
@@ -19038,6 +19484,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -19073,12 +19525,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: change_claim_status
   display_name: Change claim status
   description: 'Change the formal status of a claim, for example accept or reject it. Not a valid operation
@@ -19169,6 +19622,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -19204,12 +19663,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: create_dispute_attachment
   display_name: Create dispute attachment
   description: 'Use this resource to post an attachment declaration. Beta in Allegro: it may still change.
@@ -19292,6 +19752,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -19327,12 +19793,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: upload_dispute_attachment_file
   display_name: Upload dispute attachment file
   description: 'Upload a post purchase issue message attachment. This operation should be used after creating
@@ -19437,6 +19904,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -19472,12 +19945,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_commission_refund_application
   display_name: Get commission refund application
   description: Use this resource to get refund application details. Needs the Allegro permission allegro:api:orders:read.
@@ -19769,6 +20243,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -19804,12 +20284,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: cancel_commission_refund_application
   display_name: Cancel commission refund application
   description: Use this resource to cancel a refund application. This cannot be undone. Needs the Allegro
@@ -19891,6 +20372,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -19926,12 +20413,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_payment_operations
   display_name: Get payment operations
   description: Use this endpoint to get the list of the seller payment operations. Needs the Allegro permission
@@ -20358,6 +20846,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -20393,12 +20887,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_message_threads
   display_name: Get message threads
   description: Use this resource to get the list of user threads sorted by last message date, starting
@@ -21024,6 +21519,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -21059,12 +21560,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: write_message_in_thread
   display_name: Write message in thread
   description: Use this resource to write new message in existing thread. This resource is rate limited
@@ -21155,6 +21657,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -21190,12 +21698,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: create_message_attachment
   display_name: Create message attachment
   description: Use this resource to add attachment declaration before uploading. Needs the Allegro permission
@@ -21278,6 +21787,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -21313,12 +21828,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: mark_message_thread_as_read
   display_name: Mark message thread as read
   description: Use this resource to mark thread with provided identifier as read. Needs the Allegro permission
@@ -21409,6 +21925,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -21444,12 +21966,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: upload_message_attachment_file
   display_name: Upload message attachment file
   description: Use this resource to upload attachment using identifier that was declared. Needs the Allegro
@@ -21551,6 +22074,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -21586,12 +22115,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: delete_message
   display_name: Delete message
   description: Use this resource to delete message with provided identifier. This resource is deprecated
@@ -21674,6 +22204,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -21709,12 +22245,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_delivery_options_for_order
   display_name: Get delivery options for order
   description: Use this resource to retrieve two order characteristics. The first is a pre-populated request
@@ -22369,6 +22906,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -22404,12 +22947,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: cancel_shipment
   display_name: Cancel shipment
   description: 'Use this resource to cancel parcel. Allegro registers the request and applies it afterwards:
@@ -22493,6 +23037,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -22528,12 +23078,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: download_shipment_labels
   display_name: Download shipment labels
   description: Use this resource to get label for created shipment. Returned content type depends on created
@@ -22897,6 +23448,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -22932,12 +23489,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_shipping_rate_sets
   display_name: Get shipping rate sets
   description: Use this resource to get a list of seller's shipping rates. Needs the Allegro permission
@@ -23363,6 +23921,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -23398,12 +23962,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_shipping_rate_set
   display_name: Update shipping rate set
   description: Use this resource to edit a new seller's shipping rates set. Needs the Allegro permission
@@ -23494,6 +24059,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -23529,12 +24100,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_delivery_settings
   display_name: Update delivery settings
   description: Use this resource to modify the delivery settings declared by the seller. Needs the Allegro
@@ -23617,6 +24189,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -23652,12 +24230,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_points_of_service
   display_name: Get points of service
   description: Use this resource to get a list of points of service by seller ID. Needs the Allegro permission
@@ -23919,6 +24498,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -23954,12 +24539,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_point_of_service
   display_name: Update point of service
   description: Use this resource to modify a point of service. Needs the Allegro permission allegro:api:sale:settings:write.
@@ -24049,6 +24635,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -24084,12 +24676,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: delete_point_of_service
   display_name: Delete point of service
   description: Use this resource to delete a point of service. Needs the Allegro permission allegro:api:sale:settings:write.
@@ -24170,6 +24763,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -24205,12 +24804,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_offer_contacts
   display_name: Get offer contacts
   description: Use this resource to get details of many contacts. Needs the Allegro permission allegro:api:sale:settings:read.
@@ -24440,6 +25040,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -24475,12 +25081,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_offer_contact
   display_name: Update offer contact
   description: Use this resource to modify contact details. Needs the Allegro permission allegro:api:sale:settings:write.
@@ -24566,6 +25173,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -24601,12 +25214,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_return_policies
   display_name: Get return policies
   description: Use this resource to get the seller's return policies. Needs the Allegro permission allegro:api:sale:settings:read.
@@ -25223,6 +25837,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -25258,12 +25878,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: create_implied_warranty
   display_name: Create implied warranty
   description: Use this resource to create an implied warranty definition. Needs the Allegro permission
@@ -25346,6 +25967,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -25381,12 +26008,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: create_warranty
   display_name: Create warranty
   description: Use this resource to create a warranty definition. Needs the Allegro permission allegro:api:sale:settings:write.
@@ -25468,6 +26096,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -25503,12 +26137,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: create_warranty_attachment
   display_name: Create warranty attachment
   description: 'You can attach PDF files to warranties. Uploading attachments flow: 1. Create an attachment
@@ -25594,6 +26229,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -25629,12 +26270,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_return_policy
   display_name: Update return policy
   description: Use this resource to modify the return policy details. Needs the Allegro permission allegro:api:sale:settings:write.
@@ -25724,6 +26366,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -25759,12 +26407,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_implied_warranty
   display_name: Update implied warranty
   description: Use this resource to modify the implied warranty details. Needs the Allegro permission
@@ -25855,6 +26504,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -25890,12 +26545,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_warranty
   display_name: Update warranty
   description: Use this resource to modify the warranty details. Needs the Allegro permission allegro:api:sale:settings:write.
@@ -25985,6 +26641,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -26020,12 +26682,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: upload_warranty_attachment_file
   display_name: Upload warranty attachment file
   description: Upload an after sale services attachment. This operation should be used after creating
@@ -26124,6 +26787,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -26159,12 +26828,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: delete_return_policy
   display_name: Delete return policy
   description: Use this resource to delete a return policy definition. Needs the Allegro permission allegro:api:sale:settings:write.
@@ -26245,6 +26915,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -26280,12 +26956,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_my_ratings
   display_name: Get my ratings
   description: Use this resource to receive your sales ratings sorted by last change date, starting from
@@ -26978,6 +27655,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -27013,12 +27696,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: answer_rating
   display_name: Answer rating
   description: Use this resource to answer for received rating. Needs the Allegro permission allegro:api:ratings.
@@ -27108,6 +27792,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -27143,12 +27833,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: request_rating_removal
   display_name: Request rating removal
   description: Use this resource to request removal of received rating. Needs the Allegro permission allegro:api:ratings.
@@ -27238,6 +27929,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -27273,12 +27970,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: delete_additional_email
   display_name: Delete additional e-mail
   description: Use this resource to delete one of additional emails. Needs the Allegro permission allegro:api:profile:write.
@@ -27359,6 +28057,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -27394,12 +28098,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_user_ratings_summary
   display_name: Get user's ratings summary
   description: Use this resource to receive feedback statistics. Needs the Allegro permission allegro:api:profile:read.
@@ -28481,6 +29186,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -28516,12 +29227,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_advance_ship_notice
   display_name: Update advance ship notice
   description: Use this resource to update an Advance Ship Notice. If a client wants to update read-only
@@ -28621,6 +29333,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -28656,12 +29374,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: cancel_advance_ship_notice
   display_name: Cancel advance ship notice
   description: Use this resource to cancel an Advance Ship Notice in IN_TRANSIT status. Needs the Allegro
@@ -28743,6 +29462,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -28778,12 +29503,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: submit_advance_ship_notice
   display_name: Submit advance ship notice
   description: 'Use this resource to submit the Advance Ship Notice. After this operation, updates of
@@ -28877,6 +29603,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -28912,12 +29644,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_submitted_advance_ship_notice
   display_name: Update submitted advance ship notice
   description: Use this resource to update already submitted Advance Ship Notice. Update is allowed only
@@ -29016,6 +29749,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -29051,12 +29790,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: delete_advance_ship_notice
   display_name: Delete advance ship notice
   description: Use this resource to delete an Advance Ship Notice. Needs the Allegro permission allegro:api:fulfillment:write.
@@ -29137,6 +29877,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -29172,12 +29918,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_fulfillment_stock
   display_name: Get fulfillment stock
   description: Use this resource to get a list of the products belonging to the seller, which are in Allegro
@@ -29862,6 +30609,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -29897,12 +30650,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: get_fulfillment_warehouse
   display_name: Get fulfillment warehouse
   description: Use this resource to get the warehouse assigned to the seller. Needs the Allegro permission
@@ -30140,6 +30894,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -30175,12 +30935,13 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008
 - operation_id: update_tax_identification_number
   display_name: Update tax identification number
   description: Use this resource to update tax identification number. For international sellers only.
@@ -30263,6 +31024,12 @@ operations:
       description: 'With processing accepted: operation_id, the step that reads the outcome (none when
         Allegro documents no such step), and location, the address Allegro returned for it (none when
         it sent none).'
+  - name: retry_after_seconds
+    value_type: integer
+    schema:
+      type: *id007
+      description: 'With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the
+        outcome. Empty otherwise.'
   - name: location
     value_type: text
     schema:
@@ -30298,9 +31065,10 @@ operations:
   - result.processing
   - result.applied
   - result.check
+  - result.retry_after_seconds
   - result.location
   - result.etag
   - result.warnings
   - result.external_effect_status
   - result.definitely_no_external_effect
-  error_codes: *id007
+  error_codes: *id008

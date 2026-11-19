@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping
+from datetime import UTC, date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
+from email.utils import parsedate_to_datetime
 from typing import Any
 
 from . import numbers
@@ -35,6 +37,44 @@ def text(value: Any, what: str, *, max_length: int, min_length: int = 0) -> str:
     if len(result) > max_length or len(result) < min_length:
         raise invalid(f"{what} must be {min_length or 1} to {max_length} characters")
     return result
+
+
+_DATE_TIME_RE = re.compile(
+    r"(\d{4})-(\d{2})-(\d{2})"
+    r"(?:[Tt ](\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,9})?)?)?"
+    r"(Z|z|[+-](\d{2}):?(\d{2}))?"
+)
+
+
+def date_time(value: str, what: str) -> str:
+    """``value`` when it is a real date (and time), as RFC 3339 writes one; an impossible
+    one (2026-02-31, 25:00, an offset past 23:59) is refused, never sent."""
+    match = _DATE_TIME_RE.fullmatch(value)
+    if match is None:
+        raise invalid(f"{what} must be a date and time such as 2026-11-01T00:00:00Z")
+    year, month, day, hour, minute, second, _, off_h, off_m = match.groups()
+    try:
+        date(int(year), int(month), int(day))
+        if hour is not None:
+            datetime(
+                int(year), int(month), int(day), int(hour), int(minute), int(second or 0)
+            ).replace(
+                tzinfo=timezone(timedelta(hours=int(off_h or 0), minutes=int(off_m or 0)))
+            ).astimezone(UTC)
+    except (ValueError, OverflowError):
+        raise invalid(f"{what} is not a real date and time: {value[:40]}") from None
+    return value
+
+
+def http_date(value: str, what: str) -> str:
+    """An HTTP date (``Wed, 21 Oct 2026 07:28:00 GMT``) that names a real moment."""
+    try:
+        moment = parsedate_to_datetime(value)
+    except (TypeError, ValueError, IndexError, OverflowError):
+        moment = None
+    if moment is None:
+        raise invalid(f"{what} must be an HTTP date such as Wed, 21 Oct 2026 07:28:00 GMT")
+    return value
 
 
 def decimal(value: Any, what: str) -> Decimal:
@@ -95,6 +135,10 @@ def check(node: Mapping[str, Any], value: Any, what: str) -> Any:
         allowed = node.get("allowed")
         if allowed and result not in allowed:
             raise invalid(f"{what} must be one of: {', '.join(allowed)}")
+        if node.get("format") == "date-time":
+            return date_time(result, what)
+        if node.get("format") == "http-date":
+            return http_date(result, what)
         return result
     if kind == "integer":
         return integer(node, value, what)
@@ -136,4 +180,4 @@ def check(node: Mapping[str, Any], value: Any, what: str) -> Any:
     raise invalid(f"{what} has a kind this extension does not know")  # pragma: no cover
 
 
-__all__ = ["check", "decimal", "integer", "text", "wire"]
+__all__ = ["check", "date_time", "decimal", "http_date", "integer", "text", "wire"]

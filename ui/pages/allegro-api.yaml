@@ -57,7 +57,7 @@ components:
 
     Inputs: `rows` (required), `batch_key` (required).
 
-    Results: `commands`, `offers_count`, `processing`, `applied`, `check`, `warnings`.
+    Results: `commands`, `offers_count`, `processing`, `applied`, `check`, `retry_after_seconds`, `warnings`.
 
     ### Get stock and price update results
 

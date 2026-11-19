@@ -73,6 +73,14 @@ PROCESSING_OUTPUTS: list[dict[str, Any]] = [
             "for it (none when it sent none)."
         ),
     },
+    {
+        "name": "retry_after_seconds",
+        "type": ["integer", "null"],
+        "description": (
+            "With HTTP 202: the seconds Allegro asks to wait (Retry-After) before checking the "
+            "outcome. Empty otherwise."
+        ),
+    },
 ]
 
 
@@ -275,7 +283,7 @@ COMPOSITES: list[dict[str, Any]] = [
             _text(
                 "batch_key",
                 "Batch key",
-                "Your name for this batch, for example the export run ID. The same rows with the same key are never applied twice.",
+                "Your name for this batch: use a new key for every update, for example the export run ID. The same rows with a key already used are never applied again: Allegro answers that the command exists, nothing is sent again and the step reads that command's outcome.",
                 minLength=1,
                 maxLength=100,
             ),
@@ -285,7 +293,7 @@ COMPOSITES: list[dict[str, Any]] = [
                 "name": "commands",
                 "type": "array",
                 "items": {"type": "object", "additionalProperties": True},
-                "description": "Each command: command_id, kind (quantity or price), value, currency, offers_count and status: registered, already_registered, refused (Allegro certainly refused it after earlier commands were registered) or not_sent.",
+                "description": "Each command: command_id, kind (quantity or price), value, currency, offers_count and status: registered, already_registered, refused (Allegro certainly refused it after earlier commands were registered) or not_sent; and outcome: for already_registered, how far Allegro got with the command registered earlier (completed, total, success, failed, waiting) or unknown when it could not be read; empty for the others.",
             },
             {
                 "name": "offers_count",

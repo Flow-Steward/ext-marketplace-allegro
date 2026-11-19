@@ -44,6 +44,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/account/additional-emails",
@@ -109,6 +112,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "POST",
    "path": "/order/{orderId}/billing-documents/links",
@@ -185,6 +189,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "201"
    ],
    "kind": "write",
    "method": "POST",
@@ -272,6 +279,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/order/checkout-forms/{id}/shipments",
@@ -352,6 +362,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "POST",
    "path": "/fulfillment/tax-id",
@@ -422,6 +433,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "201"
    ],
    "kind": "write",
    "method": "PUT",
@@ -509,6 +523,9 @@
      }
     }
    ],
+   "json_success": [
+    "202"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/badges",
@@ -579,6 +596,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/order/refund-claims",
@@ -647,6 +667,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "PUT",
    "path": "/sale/offer-classifieds-packages/{offerId}",
@@ -729,6 +750,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "POST",
    "path": "/sale/offers/{offerId}/tags",
@@ -807,6 +829,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "POST",
    "path": "/pricing/offer-fee-preview",
@@ -857,6 +882,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "PUT",
    "path": "/fulfillment/advance-ship-notices/{id}/cancel",
@@ -923,6 +949,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/order/refund-claims/{claimId}",
@@ -1007,6 +1034,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/shipment-management/shipments/cancel-commands",
@@ -1080,6 +1110,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/offer-price-automation-commands",
@@ -1152,6 +1185,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "PUT",
@@ -1241,6 +1277,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "POST",
    "path": "/sale/issues/{issueId}/status",
@@ -1320,6 +1357,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "201"
    ],
    "kind": "write",
    "method": "PUT",
@@ -1404,6 +1444,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/offer-bulk-modification-commands",
@@ -1474,6 +1517,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "201"
    ],
    "kind": "write",
    "method": "PUT",
@@ -1554,6 +1600,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/offers/{offerId}/promo-options-modification",
@@ -1633,6 +1682,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/sale/offer-quantity-change-commands/{commandId}",
@@ -1698,6 +1750,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "202"
    ],
    "kind": "read",
    "method": "GET",
@@ -1790,6 +1845,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/offer-additional-services/groups",
@@ -1861,6 +1919,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "201"
    ],
    "kind": "write",
    "method": "POST",
@@ -1936,6 +1997,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/price-automation/rules",
@@ -2010,6 +2074,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/issues/attachments",
@@ -2062,6 +2129,9 @@
    "deprecated": false,
    "description": "You can create flexible bundle using this resource. Needs the Allegro permission allegro:api:sale:offers:write.",
    "headers": [],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/flexible-bundles",
@@ -2134,6 +2204,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "201"
    ],
    "kind": "write",
    "method": "POST",
@@ -2208,6 +2281,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/messaging/message-attachments",
@@ -2277,6 +2353,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/offer-attachments",
@@ -2343,6 +2422,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "201"
    ],
    "kind": "write",
    "method": "POST",
@@ -2441,6 +2523,10 @@
      }
     }
    ],
+   "json_success": [
+    "201",
+    "202"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/product-offers",
@@ -2513,6 +2599,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "POST",
@@ -2605,6 +2694,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/points-of-service",
@@ -2680,6 +2772,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/loyalty/promotions",
@@ -2752,6 +2847,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/responsible-persons",
@@ -2821,6 +2919,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "201"
    ],
    "kind": "write",
    "method": "POST",
@@ -2902,6 +3003,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/after-sales-service-conditions/return-policies",
@@ -2973,6 +3077,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "POST",
@@ -3051,6 +3158,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/shipping-rates",
@@ -3122,6 +3232,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "201"
    ],
    "kind": "write",
    "method": "POST",
@@ -3196,6 +3309,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/after-sales-service-conditions/warranties",
@@ -3265,6 +3381,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/after-sales-service-conditions/attachments",
@@ -3322,6 +3441,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/sale/loyalty/promotions/{promotionId}",
@@ -3386,6 +3506,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/account/additional-emails/{emailId}",
@@ -3450,6 +3571,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/sale/offer-additional-services/groups/{groupId}/translations/{language}",
@@ -3525,6 +3647,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/fulfillment/advance-ship-notices/{id}",
@@ -3591,6 +3714,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/sale/price-automation/rules/{ruleId}",
@@ -3656,6 +3780,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/sale/offers/{offerId}",
@@ -3702,6 +3827,7 @@
    "deprecated": false,
    "description": "Use this resource to delete flexible bundle by its unique identifier. Needs the Allegro permission allegro:api:sale:offers:write.",
    "headers": [],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/sale/flexible-bundles/{bundleId}",
@@ -3766,6 +3892,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/messaging/messages/{messageId}",
@@ -3831,6 +3958,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/sale/bundles/{bundleId}",
@@ -3895,6 +4023,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/sale/offer-tags/{tagId}",
@@ -3960,6 +4089,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/sale/offers/{offerId}/translations/{language}",
@@ -4060,6 +4190,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/points-of-service/{id}",
@@ -4125,6 +4256,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/sale/responsible-producers/{id}",
@@ -4192,6 +4324,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "DELETE",
    "path": "/after-sales-service-conditions/return-policies/{returnPolicyId}",
@@ -4266,6 +4399,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "read",
    "method": "GET",
    "path": "/fulfillment/advance-ship-notices/{id}/labels",
@@ -4330,6 +4464,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "read",
    "method": "GET",
    "path": "/order/customer-returns/{customerReturnId}/files",
@@ -4396,6 +4531,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "read",
    "method": "GET",
    "path": "/sale/issues/attachments/{attachmentId}",
@@ -4460,6 +4596,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "read",
    "method": "GET",
    "path": "/messaging/message-attachments/{attachmentId}",
@@ -4541,6 +4678,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "read",
    "method": "POST",
    "path": "/shipment-management/label",
@@ -4612,6 +4750,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "read",
    "method": "POST",
    "path": "/shipment-management/protocol",
@@ -4703,6 +4842,10 @@
      }
     }
    ],
+   "json_success": [
+    "200",
+    "202"
+   ],
    "kind": "write",
    "method": "PATCH",
    "path": "/sale/product-offers/{offerId}",
@@ -4786,6 +4929,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/allegro-prices/offers/exclusion-commands",
@@ -4841,6 +4987,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -4901,6 +5050,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/account/additional-emails",
@@ -4948,6 +5100,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -4997,6 +5152,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -5056,6 +5214,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -5128,6 +5289,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offer-additional-services/groups",
@@ -5199,6 +5363,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/fulfillment/advance-ship-notices/{id}",
@@ -5258,6 +5425,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -5319,6 +5489,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/fulfillment/submit-commands/{command-id}",
@@ -5378,6 +5551,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -5464,6 +5640,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/alle-discount/campaigns",
@@ -5520,6 +5699,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/alle-discount/submit-offer-commands/{commandId}",
@@ -5574,6 +5756,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/alle-discount/withdraw-offer-commands/{commandId}",
@@ -5619,6 +5804,7 @@
      "input": "if_modified_since",
      "name": "If-Modified-Since",
      "node": {
+      "format": "http-date",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -5642,6 +5828,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -5708,6 +5897,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/allegro-prices/offers/exclusion-commands/{commandId}",
@@ -5768,6 +5960,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/allegro-prices/accounts/participations",
@@ -5815,6 +6010,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -5875,6 +6073,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -5961,6 +6162,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offer-price-automation-commands/{commandId}",
@@ -6021,6 +6225,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/price-automation/rules/{ruleId}",
@@ -6080,6 +6287,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/price-automation/rules",
@@ -6128,6 +6338,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -6189,6 +6402,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/badge-applications/{applicationId}",
@@ -6248,6 +6464,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -6341,6 +6560,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/badge-campaigns",
@@ -6402,6 +6624,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/badge-operations/{operationId}",
@@ -6461,6 +6686,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -6554,6 +6782,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/billing/billing-entries",
@@ -6574,6 +6805,7 @@
      "input": "occurred_at_gte",
      "name": "occurredAt.gte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -6584,6 +6816,7 @@
      "input": "occurred_at_lte",
      "name": "occurredAt.lte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -6688,6 +6921,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/billing/billing-types",
@@ -6733,6 +6969,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -6791,6 +7030,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/categories/{categoryId}",
@@ -6841,6 +7083,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -6928,6 +7173,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/categories/{categoryId}/parameters",
@@ -6984,6 +7232,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/categories/{categoryId}/product-parameters",
@@ -7035,6 +7286,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/classified-offers-stats",
@@ -7056,6 +7310,7 @@
      "input": "date_gte",
      "name": "date.gte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -7066,6 +7321,7 @@
      "input": "date_lte",
      "name": "date.lte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -7113,6 +7369,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -7169,6 +7428,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/classifieds-packages",
@@ -7223,6 +7485,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -7284,6 +7549,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -7347,6 +7615,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -7461,6 +7732,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/compatibility-list/supported-categories",
@@ -7495,6 +7769,7 @@
      "input": "if_modified_since",
      "name": "If-Modified-Since",
      "node": {
+      "format": "http-date",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -7518,6 +7793,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -7606,11 +7884,15 @@
      "input": "if_modified_since",
      "name": "If-Modified-Since",
      "node": {
+      "format": "http-date",
       "kind": "text",
       "max_length": 2000,
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -7729,6 +8011,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -7862,6 +8147,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/order/customer-returns/{customerReturnId}",
@@ -7923,6 +8211,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -8084,6 +8375,7 @@
      "input": "updated_at_gte",
      "name": "updatedAt.gte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -8094,6 +8386,7 @@
      "input": "updated_at_lte",
      "name": "updatedAt.lte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -8187,6 +8480,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/delivery-methods",
@@ -8225,6 +8521,9 @@
    "deprecated": false,
    "description": "Use this resource to retrieve two order characteristics. The first is a pre-populated request body for creating a shipment in SwA. The second is a list of possible delivery types for processing the order, including their maximums. Needs the Allegro permission allegro:api:shipments:write.",
    "headers": [],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/shipment-management/delivery-proposals/{orderId}",
@@ -8284,6 +8583,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/shipment-management/delivery-services",
@@ -8332,6 +8634,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -8394,6 +8699,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/deposit/types",
@@ -8443,6 +8751,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -8503,6 +8814,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -8586,6 +8900,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/issues",
@@ -8668,6 +8985,9 @@
    "deprecated": false,
    "description": "Use this resource to retrieve flexible bundle by its unique identifier. Needs the Allegro permission allegro:api:sale:offers:read.",
    "headers": [],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/flexible-bundles/{bundleId}",
@@ -8708,6 +9028,9 @@
    "deprecated": false,
    "description": "You can fetch page of seller's flexible bundles using this endpoint. Paging: To move to next page, specify page.id parameter with value obtained in response from previous request. Number of offer bundles on single page can be specified using limit parameter. Filtering: Offer bundles can be filtered to bundles which contain offer specified in offer.id parameter. Needs the Allegro permission allegro:api:sale:offers:read.",
    "headers": [],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/flexible-bundles",
@@ -8791,6 +9114,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/fulfillment/available-products",
@@ -8863,6 +9189,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/fulfillment/removal/preferences",
@@ -8921,6 +9250,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "read",
    "method": "GET",
    "path": "/fulfillment/stock",
@@ -9101,6 +9431,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/fulfillment/warehouse",
@@ -9150,6 +9483,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -9224,6 +9560,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/after-sales-service-conditions/implied-warranties/{impliedWarrantyId}",
@@ -9279,6 +9618,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/marketplaces",
@@ -9322,6 +9664,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -9382,6 +9727,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/messaging/threads/{threadId}",
@@ -9440,6 +9788,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -9571,6 +9922,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/messaging/threads/{threadId}/messages",
@@ -9613,6 +9967,7 @@
      "input": "before",
      "name": "before",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -9623,6 +9978,7 @@
      "input": "after",
      "name": "after",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -9685,6 +10041,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/me",
@@ -9733,6 +10092,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -9792,6 +10154,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/user-ratings",
@@ -9816,6 +10181,7 @@
      "input": "last_changed_at_gte",
      "name": "lastChangedAt.gte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -9826,6 +10192,7 @@
      "input": "last_changed_at_lte",
      "name": "lastChangedAt.lte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -9899,6 +10266,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/smart",
@@ -9959,6 +10329,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -10021,6 +10394,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offer-attachments/{attachmentId}",
@@ -10080,6 +10456,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/bundles/{bundleId}",
@@ -10138,6 +10517,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -10218,6 +10600,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offer-contacts/{id}",
@@ -10275,6 +10660,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offer-contacts",
@@ -10319,6 +10707,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -10415,6 +10806,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offer-modification-commands/{commandId}/tasks",
@@ -10500,6 +10894,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offer-modification-commands/{commandId}",
@@ -10559,6 +10956,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -10637,6 +11037,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/pricing/offer-quotes",
@@ -10699,6 +11102,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offers/{offerId}/rating",
@@ -10758,6 +11164,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -10830,6 +11239,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offers/{offerId}/translations",
@@ -10895,6 +11307,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -10994,6 +11409,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -11288,6 +11706,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/alle-discount/{campaignId}/submitted-offers",
@@ -11388,6 +11809,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offers/unfilled-parameters",
@@ -11486,6 +11910,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/order/checkout-forms/{id}",
@@ -11548,6 +11975,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/order/event-stats",
@@ -11595,6 +12025,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -11674,6 +12107,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/order/checkout-forms/{id}/invoices",
@@ -11733,6 +12169,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/order/checkout-forms/{id}/shipments",
@@ -11791,6 +12230,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -11863,6 +12305,7 @@
      "input": "line_items_bought_at_lte",
      "name": "lineItems.boughtAt.lte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -11873,6 +12316,7 @@
      "input": "line_items_bought_at_gte",
      "name": "lineItems.boughtAt.gte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -11933,6 +12377,7 @@
      "input": "updated_at_lte",
      "name": "updatedAt.lte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -11943,6 +12388,7 @@
      "input": "updated_at_gte",
      "name": "updatedAt.gte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -12010,6 +12456,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -12080,6 +12529,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/payments/payment-operations",
@@ -12141,6 +12593,7 @@
      "input": "occurred_at_gte",
      "name": "occurredAt.gte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -12151,6 +12604,7 @@
      "input": "occurred_at_lte",
      "name": "occurredAt.lte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -12264,6 +12718,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/payments/refunds",
@@ -12325,6 +12782,7 @@
      "input": "occurred_at_gte",
      "name": "occurredAt.gte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -12335,6 +12793,7 @@
      "input": "occurred_at_lte",
      "name": "occurredAt.lte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -12403,6 +12862,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -12483,6 +12945,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "POST",
    "path": "/shipment-management/pickup-proposals",
@@ -12532,6 +12997,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -12589,6 +13057,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/category-parameters-scheduled-changes",
@@ -12599,6 +13070,7 @@
      "input": "scheduled_for_gte",
      "name": "scheduledFor.gte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -12609,6 +13081,7 @@
      "input": "scheduled_for_lte",
      "name": "scheduledFor.lte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -12619,6 +13092,7 @@
      "input": "scheduled_at_gte",
      "name": "scheduledAt.gte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -12629,6 +13103,7 @@
      "input": "scheduled_at_lte",
      "name": "scheduledAt.lte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -12712,6 +13187,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/points-of-service/{id}",
@@ -12771,6 +13249,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -12841,6 +13322,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -12926,6 +13410,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offer-bulk-modification-commands/{commandId}",
@@ -12984,6 +13471,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -13069,6 +13559,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offer-price-change-commands/{commandId}",
@@ -13127,6 +13620,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -13217,6 +13713,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/products/change-proposals/{changeProposalId}",
@@ -13277,6 +13776,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/loyalty/promotions/{promotionId}",
@@ -13335,6 +13837,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -13418,6 +13923,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offers/promo-options-commands/{commandId}",
@@ -13478,6 +13986,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offer-promotion-packages",
@@ -13523,6 +14034,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -13595,6 +14109,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offers/{offerId}/promo-options",
@@ -13653,6 +14170,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -13753,6 +14273,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offer-publication-commands/{commandId}/tasks",
@@ -13838,6 +14361,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offer-publication-commands/{commandId}",
@@ -13897,6 +14423,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -13958,6 +14487,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/fulfillment/returns/refund-dispositions",
@@ -13968,6 +14500,7 @@
      "input": "created_at_gte",
      "name": "createdAt.gte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -13978,6 +14511,7 @@
      "input": "created_at_lte",
      "name": "createdAt.lte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -14052,6 +14586,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/responsible-persons/{id}",
@@ -14112,6 +14649,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -14187,6 +14727,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/responsible-producers/{id}",
@@ -14247,6 +14790,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -14322,6 +14868,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/after-sales-service-conditions/return-policies",
@@ -14395,6 +14944,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/after-sales-service-conditions/return-policies/{returnPolicyId}",
@@ -14455,6 +15007,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/quality",
@@ -14499,6 +15054,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/classified-seller-stats",
@@ -14509,6 +15067,7 @@
      "input": "date_gte",
      "name": "date.gte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -14519,6 +15078,7 @@
      "input": "date_lte",
      "name": "date.lte",
      "node": {
+      "format": "date-time",
       "kind": "text",
       "max_length": 2000,
       "required": false
@@ -14571,6 +15131,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -14633,6 +15196,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/shipment-management/shipments/cancel-commands/{commandId}",
@@ -14693,6 +15259,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -14755,6 +15324,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/fulfillment/orders/{orderId}/parcels",
@@ -14814,6 +15386,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/order/carriers",
@@ -14860,6 +15435,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -14921,6 +15499,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/shipping-rates",
@@ -14976,6 +15557,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -15033,6 +15617,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/size-tables-templates",
@@ -15077,6 +15664,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -15127,6 +15717,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -15200,6 +15793,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -15285,6 +15881,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offer-quantity-change-commands/{commandId}",
@@ -15343,6 +15942,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -15423,6 +16025,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/sale/offers/{offerId}/tags",
@@ -15483,6 +16088,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/fulfillment/tax-id",
@@ -15532,6 +16140,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -15612,6 +16223,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "GET",
    "path": "/users/{userId}/ratings-summary",
@@ -15671,6 +16285,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -15744,6 +16361,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -15819,6 +16439,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "PUT",
@@ -15899,6 +16522,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "201"
    ],
    "kind": "write",
    "method": "PUT",
@@ -15985,6 +16611,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "POST",
    "path": "/ingredients/parse",
@@ -16049,6 +16678,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "PUT",
@@ -16140,6 +16772,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/product-proposals",
@@ -16222,6 +16857,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/products/{productId}/change-proposals",
@@ -16301,6 +16939,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "201"
    ],
    "kind": "write",
    "method": "PUT",
@@ -16388,6 +17029,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "read",
    "method": "POST",
    "path": "/sale/allegro-prices/offers-queries",
@@ -16466,6 +17110,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/payments/refunds",
@@ -16537,6 +17184,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "POST",
@@ -16620,6 +17270,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/sale/user-ratings/{ratingId}/removal",
@@ -16702,6 +17355,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/shipment-management/pickups/create-commands",
@@ -16751,6 +17407,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -16821,6 +17480,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -16976,6 +17638,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/issues/{issueId}/message",
@@ -17060,6 +17725,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/fulfillment/removal/preferences",
@@ -17125,6 +17793,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "POST",
    "path": "/order/checkout-forms/{id}/serial-numbers",
@@ -17212,6 +17881,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "PUT",
    "path": "/order/checkout-forms/{id}/fulfillment",
@@ -17306,6 +17976,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/fulfillment/submit-commands/{command-id}",
@@ -17379,6 +18052,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/alle-discount/submit-offer-commands",
@@ -17450,6 +18126,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/allegro-prices/offers/submit-offer-commands",
@@ -17505,6 +18184,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "read",
    "method": "GET",
@@ -17585,6 +18267,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/sale/offer-additional-services/groups/{groupId}",
@@ -17661,6 +18346,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "PATCH",
@@ -17764,6 +18452,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/fulfillment/advance-ship-notices/{id}",
@@ -17846,6 +18537,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "PATCH",
    "path": "/sale/allegro-prices/accounts/participations",
@@ -17916,6 +18610,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "PUT",
@@ -18002,6 +18699,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/sale/delivery-settings",
@@ -18054,6 +18754,9 @@
    "deprecated": false,
    "description": "You can update flexible bundle using this resource. Needs the Allegro permission allegro:api:sale:offers:write.",
    "headers": [],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/sale/flexible-bundles/{bundleId}",
@@ -18137,6 +18840,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/after-sales-service-conditions/implied-warranties/{impliedWarrantyId}",
@@ -18214,6 +18920,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "202"
    ],
    "kind": "write",
    "method": "PATCH",
@@ -18305,6 +19014,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/sale/bundles/{bundleId}/discount",
@@ -18381,6 +19093,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "PUT",
@@ -18465,6 +19180,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "PUT",
    "path": "/sale/offer-tags/{tagId}",
@@ -18546,6 +19262,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "PATCH",
    "path": "/sale/offers/{offerId}/translations/{language}",
@@ -18655,6 +19372,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/points-of-service/{id}",
@@ -18740,6 +19460,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/sale/loyalty/promotions/{promotionId}",
@@ -18822,6 +19545,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/sale/responsible-persons/{id}",
@@ -18902,6 +19628,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "PUT",
@@ -18990,6 +19719,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "PUT",
@@ -19080,6 +19812,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/sale/shipping-rates/{id}",
@@ -19161,6 +19896,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "PUT",
@@ -19253,6 +19991,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/fulfillment/advance-ship-notices/{id}/submitted",
@@ -19333,6 +20074,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "PUT",
    "path": "/fulfillment/tax-id",
@@ -19406,6 +20148,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "PUT",
@@ -19486,6 +20231,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/sale/issues/attachments/{attachmentId}",
@@ -19565,6 +20313,9 @@
      }
     }
    ],
+   "json_success": [
+    "200"
+   ],
    "kind": "write",
    "method": "PUT",
    "path": "/messaging/message-attachments/{attachmentId}",
@@ -19640,6 +20391,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "PUT",
@@ -19726,6 +20480,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/images",
@@ -19796,6 +20553,7 @@
      }
     }
    ],
+   "json_success": [],
    "kind": "write",
    "method": "PUT",
    "path": "/order/checkout-forms/{id}/invoices/{invoiceId}/file",
@@ -19885,6 +20643,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/order/{orderId}/billing-documents/files",
@@ -19960,6 +20721,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "200"
    ],
    "kind": "write",
    "method": "PUT",
@@ -20038,6 +20802,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/sale/alle-discount/withdraw-offer-commands",
@@ -20113,6 +20880,9 @@
      }
     }
    ],
+   "json_success": [
+    "201"
+   ],
    "kind": "write",
    "method": "POST",
    "path": "/messaging/messages",
@@ -20182,6 +20952,9 @@
       "required": false
      }
     }
+   ],
+   "json_success": [
+    "201"
    ],
    "kind": "write",
    "method": "POST",

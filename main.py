@@ -119,6 +119,10 @@ def _bounded_serialized_response(response: Mapping[str, Any]) -> tuple[dict[str,
 MAX_KEPT_TEXT = 200
 MAX_KEPT_FIELDS = 50
 MAX_KEPT_WARNINGS = 5
+KEPT_WHOLE = ("check",)
+ROW_LISTS = ("commands",)
+ROW_KEYS = ("command_id", "id", "status")
+MAX_KEPT_ROWS = 1000
 CUT_TO_IDENTIFIERS = (
     "The change was saved, but its full result is too large for the step output; only its "
     "identifiers and short values are kept: see the rest in Allegro"
@@ -160,7 +164,7 @@ def _too_large(response: Mapping[str, Any]) -> tuple[dict[str, Any], bytes]:
         if key in response:
             error_response[key] = response[key]
     if isinstance(result, Mapping):
-        error_response["result"] = kept
+        error_response["result"] = {**kept, "warnings": []}
     return error_response, _json_bytes(error_response)
 
 
@@ -183,8 +187,18 @@ def _short_values(result: Mapping[str, Any]) -> dict[str, Any]:
     for key, item in list(result.items())[: MAX_KEPT_FIELDS * 4]:
         if key == "warnings" or not isinstance(key, str) or len(key) > MAX_KEPT_TEXT:
             continue
-        if isinstance(item, Mapping) and len(kept) < MAX_KEPT_FIELDS:
+        if key in KEPT_WHOLE and isinstance(item, Mapping):
+            # Where to read the write's outcome: kept as it is (bounded by the runtime).
+            kept[key] = {k: v for k, v in item.items() if isinstance(v, (str, type(None)))}
+        elif isinstance(item, Mapping) and len(kept) < MAX_KEPT_FIELDS:
             kept[key] = short(item)
+        elif key in ROW_LISTS and isinstance(item, list):
+            # Per-row statuses of a write: each row's id and status.
+            kept[key] = [
+                {k: v for k, v in short(row).items() if k in ROW_KEYS}
+                for row in item[:MAX_KEPT_ROWS]
+                if isinstance(row, Mapping)
+            ]
     return kept
 
 
@@ -223,10 +237,11 @@ def _json_bytes(response: Mapping[str, Any]) -> bytes:
 def _error_response(code: str, message: str) -> dict[str, Any]:
     return {
         "ok": False,
-        "result": {},
+        "result": {"warnings": []},
         "error_code": code,
         "error": message,
         "errors": [{"code": code, "message": message}],
+        "warnings": [],
     }
 
 
