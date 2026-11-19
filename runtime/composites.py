@@ -24,7 +24,7 @@ from collections.abc import Callable, Mapping
 from decimal import Decimal
 from typing import Any
 
-from . import budget, errors, files, generic, nesting
+from . import budget, errors, files, generic, nesting, outcome
 from .context import Context
 from .errors import ExtensionError, invalid
 from .params import date_time, decimal, integer, text
@@ -155,46 +155,80 @@ def verify_identity(context: Context) -> dict[str, Any]:
 # -- pages -------------------------------------------------------------------------------
 
 
+#: The longest warning a list step adds when it stops; the budget keeps room for it.
+MAX_STOP_WARNING = 600
+_STOP_RESERVE = "x" * MAX_STOP_WARNING
+
+
 class Pages:
     """Collects the records of a paginated read into the step output or a workflow file.
 
-    The output is measured page by page (``budget.Totals`` added up), so a long list
-    costs one walk over each record, not one over everything read so far."""
+    The whole result is measured, not only the records (N1): its envelope (``envelope``,
+    with the widest values the step can put there, the warnings so far, the pending
+    ones and room for the closing warning) plus each record as it is added. So the
+    final budget check never refuses what was taken here. Each record is walked once."""
 
-    def __init__(self, to_file: bool, limit: int) -> None:
+    def __init__(self, to_file: bool, key: str, envelope: dict[str, Any]) -> None:
         self.to_file = to_file
-        self.limit = limit
+        self.key = key
+        self.envelope = envelope
         self.items: list[Any] = []
         self.size = 2
-        self.totals = budget.Totals(nodes=4, size=64)
+        self.records = budget.Totals()
         self.warnings: list[str] = []
         self.complete = False
 
-    def take(self, page: list[Any], key: str) -> bool:
-        """Add a page; False (nothing added) when it does not fit any more."""
+    def take(self, page: list[Any], pending: list[str]) -> bool:
+        """Add a page and its pending warnings; False (nothing added) when they do not fit."""
         if self.to_file:
             size = self.size + sum(len(dumps_json(item).encode("utf-8")) + 1 for item in page)
             if size > MAX_FILE_BYTES:
                 return False
             self.size = size
-            self.items += page
-            return True
-        added = self.totals
-        for item in page:
-            cost = budget.measure(item)
-            # One level for the list, one for the result object.
-            added = added + budget.Totals(cost.nodes, cost.depth + 2, cost.size + 1)
-        if not added.within():
-            return False
-        self.totals = added
+        else:
+            added = self.records
+            for item in page:
+                cost = budget.measure(item)
+                # One level for the list, one for the result object.
+                added = added + budget.Totals(cost.nodes, cost.depth + 2, cost.size + 1)
+            frame = budget.measure(
+                {
+                    **self.envelope,
+                    self.key: [],
+                    "warnings": [*self.warnings, *pending, _STOP_RESERVE],
+                }
+            )
+            if not (added + frame).within():
+                return False
+            self.records = added
         self.items += page
+        self.warnings += pending
         return True
+
+
+def _stop_warning(text: str) -> str:
+    return errors.safe_text(text, MAX_STOP_WARNING)
 
 
 #: Read failures after which the pages already read are returned (HTTP 429, 408 and
 #: 5xx, network failures and time-outs of a read): the read can be continued later.
 def _transient(exc: ExtensionError) -> bool:
     return exc.retryable is True
+
+
+def _too_large_answer(exc: ExtensionError) -> bool:
+    """Allegro's answer was larger than the transport reads (a read: nothing changed)."""
+    return exc.code == errors.RESPONSE_TOO_LARGE and exc.definitely_no_external_effect is True
+
+
+def _out_of_time(context: Context) -> ExtensionError:
+    """No page fitted before the time ran out, after requests were already made."""
+    return errors.no_effect(
+        errors.TIMEOUT,
+        f"The step ran out of time after {context.transport.calls} requests to Allegro while "
+        "asking for a page small enough to return; nothing was changed. Run it again with "
+        "narrower filters",
+    )
 
 
 def _finish(context: Context, pages: Pages, key: str, extra: dict[str, Any]) -> dict[str, Any]:
@@ -229,8 +263,22 @@ def _offset_pages(
     to_file: bool,
     out_key: str,
 ) -> dict[str, Any]:
+    """Pages read by offset until the list ends.
+
+    A page that does not fit the output (or that Allegro answers larger than the
+    transport reads, on the first page) is asked again with half as many records,
+    down to one; after a page fits, the next one is asked at the full size again (N2).
+    ``next_offset`` is always the first record not returned. An empty page while
+    Allegro counts more records than were read is an error, never the end (N3)."""
     shown = f"{generic.spec(operation_id)['method']} {generic.spec(operation_id)['path']}"
-    pages = Pages(to_file, most)
+    envelope = {
+        "count": 10**9,
+        "total_count": 10**12,
+        "complete": False,
+        "next_offset": 10**12,
+        "file": "x" * 100,
+    }
+    pages = Pages(to_file, out_key, envelope)
     offset = start
     total: int | None = None
     seen: set[str] = set()
@@ -241,21 +289,28 @@ def _offset_pages(
         if len(pages.items) >= most:
             stopped = f"the {most} asked for were read"
             break
-        if not first and not _room(context):
+        if context.transport.calls and not _room(context):
+            if first:
+                raise _out_of_time(context)
             stopped = "time ran out"
             break
         limit = min(size, most - len(pages.items))
         try:
             data = _read(context, operation_id, {**query, "limit": limit, "offset": offset})
         except DeadlineReached:
+            if first and context.transport.calls:
+                raise _out_of_time(context) from None
             if first:
                 raise
             stopped = "time ran out"
             break
         except ExtensionError as exc:
-            if first or not _transient(exc):
+            if _too_large_answer(exc) and first and limit > 1:
+                size = max(1, limit // 2)
+                continue
+            if first or not (_transient(exc) or _too_large_answer(exc)):
                 raise
-            stopped = f"Allegro could not give the next page ({exc.code}: {errors.safe_text(exc.message, 300)})"
+            stopped = f"Allegro could not give the next page ({exc.code}: {exc.message})"
             break
         if not isinstance(data, Mapping) or not isinstance(data.get(list_key), list):
             raise _bad(shown, f"has no {list_key} list")
@@ -263,6 +318,12 @@ def _offset_pages(
         count_total = data.get("totalCount")
         if isinstance(count_total, (int, Decimal)) and not isinstance(count_total, bool):
             total = int(count_total)
+        if not page and total is not None and offset < total:
+            raise _bad(
+                shown,
+                f"is an empty page at offset {offset} while it counts {total} records; the read "
+                "is not complete",
+            )
         fresh = []
         for item in page:
             ident = item.get("id") if isinstance(item, Mapping) else None
@@ -271,9 +332,15 @@ def _offset_pages(
             if ident in seen:
                 continue
             fresh.append(item)
-        if not pages.take(fresh, out_key):
-            if first and limit > 1:
-                # The first page does not fit: ask again for half as many records.
+        pending = []
+        if len(fresh) != len(page):
+            pending.append(
+                f"{len(page) - len(fresh)} records appeared twice because the list changed while "
+                "it was read; each is returned once"
+            )
+        if not pages.take(fresh, pending):
+            if limit > 1:
+                # The page does not fit: ask again for half as many records.
                 size = max(1, limit // 2)
                 continue
             if first:
@@ -281,20 +348,18 @@ def _offset_pages(
             stopped = "the output is full" if not to_file else "the file is full"
             break
         seen.update(item["id"] for item in fresh)
-        if len(fresh) != len(page):
-            pages.warnings.append(
-                f"{len(page) - len(fresh)} records appeared twice because the list changed while "
-                "it was read; each is returned once"
-            )
         first = False
+        size = page_size
         offset += len(page)
         if len(page) < limit or (total is not None and offset >= total) or not page:
             pages.complete = True
             break
     if not pages.complete:
         pages.warnings.append(
-            f"Stopped early because {stopped}; run the step again from next_offset {offset} "
-            "for the rest"
+            _stop_warning(
+                f"Stopped early because {stopped}; run the step again from next_offset "
+                f"{offset} for the rest"
+            )
         )
     return _finish(
         context,
@@ -439,7 +504,8 @@ def list_order_events(context: Context) -> dict[str, Any]:
     after = text(after, "after_event_id", max_length=64) if after not in (None, "") else None
     types = _list_of_text(given, "types", max_items=7, max_length=40, allowed=EVENT_TYPES)
     most = _opt_int(given, "max_events", default=10_000, low=1, high=50_000)
-    pages = Pages(False, most)
+    envelope = {"count": 10**9, "last_event_id": "x" * 64, "complete": False}
+    pages = Pages(False, "events", envelope)
     last = after
     first = True
     stopped = ""
@@ -448,7 +514,9 @@ def list_order_events(context: Context) -> dict[str, Any]:
         if len(pages.items) >= most:
             stopped = f"the {most} asked for were read"
             break
-        if not first and not _room(context):
+        if context.transport.calls and not _room(context):
+            if first:
+                raise _out_of_time(context)
             stopped = "time ran out"
             break
         limit = min(size, most - len(pages.items))
@@ -460,14 +528,19 @@ def list_order_events(context: Context) -> dict[str, Any]:
         try:
             data = _read(context, "get_order_events_page", query)
         except DeadlineReached:
+            if first and context.transport.calls:
+                raise _out_of_time(context) from None
             if first:
                 raise
             stopped = "time ran out"
             break
         except ExtensionError as exc:
-            if first or not _transient(exc):
+            if _too_large_answer(exc) and first and limit > 1:
+                size = max(1, limit // 2)
+                continue
+            if first or not (_transient(exc) or _too_large_answer(exc)):
                 raise
-            stopped = f"Allegro could not give the next page ({exc.code}: {errors.safe_text(exc.message, 300)})"
+            stopped = f"Allegro could not give the next page ({exc.code}: {exc.message})"
             break
         if not isinstance(data, Mapping) or not isinstance(data.get("events"), list):
             raise _bad("GET /order/events", "has no events list")
@@ -477,9 +550,9 @@ def list_order_events(context: Context) -> dict[str, Any]:
             raise _bad("GET /order/events", "lists an event without an id")
         if last is not None and last in ids:
             raise _bad("GET /order/events", f"repeats the event {last} it was asked to read after")
-        if not pages.take(page, "events"):
-            if first and limit > 1:
-                # The first page does not fit: ask again for half as many events.
+        if not pages.take(page, []):
+            if limit > 1:
+                # The page does not fit: ask again for half as many events.
                 size = max(1, limit // 2)
                 continue
             if first:
@@ -487,6 +560,7 @@ def list_order_events(context: Context) -> dict[str, Any]:
             stopped = "the output is full"
             break
         first = False
+        size = 1000
         if page:
             last = ids[-1]
         if len(page) < limit:
@@ -494,8 +568,10 @@ def list_order_events(context: Context) -> dict[str, Any]:
             break
     if not pages.complete:
         pages.warnings.append(
-            f"Stopped early because {stopped}; run the step again with after_event_id "
-            f"{last} for the rest"
+            _stop_warning(
+                f"Stopped early because {stopped}; run the step again with after_event_id "
+                f"{last} for the rest"
+            )
         )
     result = _finish(context, pages, "events", {"last_event_id": last, "complete": pages.complete})
     result.pop("file", None)
@@ -659,7 +735,7 @@ def update_stock_and_prices(context: Context) -> dict[str, Any]:
                 base=exc,
             ) from None
         try:
-            echoed = generic.confirmed_data(context, entry, answer, plan.shown, warnings)
+            echoed = outcome.write_outcome(context, entry, answer, plan.shown, warnings)
         except ExtensionError as exc:
             # A documented success with a body that is not the documented JSON.
             raise _midway(done, commands, command, exc.message, unsure=True, base=exc) from None
@@ -850,62 +926,124 @@ def get_stock_and_price_update_results(context: Context) -> dict[str, Any]:
         asked.append((command_id, str(kind)))
     out: list[dict[str, Any]] = []
     warnings: list[str] = []
-    for done, (command_id, kind) in enumerate(asked):
-        if done and not _room(context):
+    unread: list[str] = []
+    first_failure: ExtensionError | None = None
+    # The whole result is measured (N1): its envelope with every command ID listed as
+    # unread and the closing warning, then each row and warning as it is added.
+    totals = budget.measure(
+        _results([], asked, [c for c, _ in asked], [_FULL_RESERVE, _FULL_RESERVE])
+    )
+    noted = 0
+    for index, (command_id, kind) in enumerate(asked):
+        if index and not _room(context):
+            unread += [c for c, _ in asked[index:]]
             warnings.append(
-                f"Time ran out: {len(asked) - done} commands were not read; run the step again for them"
+                f"Time ran out: {len(asked) - index} commands were not read; run the step again "
+                "with unread_command_ids"
             )
             break
-        summary_step, report_step = _REPORT_STEPS[kind]
-        summary = _read(context, summary_step, {"command_id": command_id})
-        if not isinstance(summary, Mapping) or not isinstance(summary.get("taskCount"), Mapping):
-            raise _bad(f"the {kind} command {command_id}", "has no taskCount")
-        counts = summary["taskCount"]
-        total, success, failed = (_count(counts.get(k, 0)) for k in ("total", "success", "failed"))
-        row: dict[str, Any] = {
-            "command_id": command_id,
-            "kind": kind,
-            "completed": summary.get("completedAt") not in (None, ""),
-            "total": total,
-            "success": success,
-            "failed": failed,
-            "waiting": max(0, total - success - failed),
-            "failed_offers": [],
-        }
-        if failed:
-            report = _read(
-                context, report_step, {"command_id": command_id, "limit": 1000, "offset": 0}
+        try:
+            row = _command_result(context, command_id, kind, warnings)
+        except (ExtensionError, DeadlineReached) as exc:
+            # One command that cannot be read (404, 429, a time-out, an invalid answer)
+            # does not hide the others: its row says why.
+            reason = (
+                "the step ran out of time"
+                if isinstance(exc, DeadlineReached)
+                else f"{exc.code}: {errors.safe_text(exc.message, 300)}"
             )
-            tasks = report.get("tasks") if isinstance(report, Mapping) else None
-            if not isinstance(tasks, list):
-                raise _bad(f"the {kind} command report {command_id}", "has no tasks list")
-            for task in tasks:
-                if not isinstance(task, Mapping) or task.get("status") != "FAIL":
-                    continue
-                offer = task.get("offer")
-                offer_id = offer.get("id") if isinstance(offer, Mapping) else None
-                row["failed_offers"].append(
-                    {
-                        "offer_id": offer_id if isinstance(offer_id, str) else None,
-                        "message": errors.safe_text(task.get("message"), 300),
-                    }
-                )
-                if len(row["failed_offers"]) >= MAX_FAILED_SHOWN:
-                    break
-            if len(row["failed_offers"]) < failed:
-                warnings.append(
-                    f"Command {command_id}: Allegro counts {failed} failed offers, the report "
-                    f"lists {len(row['failed_offers'])}"
-                )
+            if isinstance(exc, ExtensionError) and first_failure is None:
+                first_failure = exc
+            row = {"command_id": command_id, "kind": kind, "status": "unread", "reason": reason}
+            unread.append(command_id)
+        cost = budget.measure(row)
+        added = totals + budget.Totals(cost.nodes, cost.depth + 2, cost.size + 1)
+        for warning in warnings[noted:]:
+            added = added + budget.Totals(1, 0, len(warning.encode("utf-8")) + 3)
+        if not added.within():
+            left = [c for c, _ in asked[index:]]
+            unread = [c for c in unread if c not in left] + left
+            warnings.append(
+                f"The output is full: {len(left)} commands were not returned; run the step "
+                "again with unread_command_ids"
+            )
+            break
+        totals, noted = added, len(warnings)
         out.append(row)
-    result = {
+    if not any(r["status"] == "read" for r in out):
+        if first_failure is not None:
+            raise first_failure
+        if not out:
+            raise budget.too_large()
+    return _results(out, asked, unread, warnings)
+
+
+#: Room kept for the warning that says the output is full.
+_FULL_RESERVE = "x" * 200
+
+
+def _results(
+    out: list[dict[str, Any]],
+    asked: list[tuple[str, str]],
+    unread: list[str],
+    warnings: list[str],
+) -> dict[str, Any]:
+    read = [r for r in out if r["status"] == "read"]
+    return {
         "commands": out,
-        "all_completed": len(out) == len(asked) and all(r["completed"] for r in out),
-        "failed_count": sum(r["failed"] for r in out),
+        "all_completed": len(read) == len(asked) and all(r["completed"] for r in read),
+        "failed_count": sum(r["failed"] for r in read),
+        "unread_command_ids": unread,
         "warnings": warnings,
     }
-    budget.ensure_fits(result)
-    return result
+
+
+def _command_result(
+    context: Context, command_id: str, kind: str, warnings: list[str]
+) -> dict[str, Any]:
+    """One command's summary and, when offers failed, its report of failed offers."""
+    summary_step, report_step = _REPORT_STEPS[kind]
+    summary = _read(context, summary_step, {"command_id": command_id})
+    if not isinstance(summary, Mapping) or not isinstance(summary.get("taskCount"), Mapping):
+        raise _bad(f"the {kind} command {command_id}", "has no taskCount")
+    counts = summary["taskCount"]
+    total, success, failed = (_count(counts.get(k, 0)) for k in ("total", "success", "failed"))
+    row: dict[str, Any] = {
+        "command_id": command_id,
+        "kind": kind,
+        "status": "read",
+        "reason": None,
+        "completed": summary.get("completedAt") not in (None, ""),
+        "total": total,
+        "success": success,
+        "failed": failed,
+        "waiting": max(0, total - success - failed),
+        "failed_offers": [],
+    }
+    if failed:
+        report = _read(context, report_step, {"command_id": command_id, "limit": 1000, "offset": 0})
+        tasks = report.get("tasks") if isinstance(report, Mapping) else None
+        if not isinstance(tasks, list):
+            raise _bad(f"the {kind} command report {command_id}", "has no tasks list")
+        for task in tasks:
+            if not isinstance(task, Mapping) or task.get("status") != "FAIL":
+                continue
+            offer = task.get("offer")
+            offer_id = offer.get("id") if isinstance(offer, Mapping) else None
+            row["failed_offers"].append(
+                {
+                    "offer_id": offer_id if isinstance(offer_id, str) else None,
+                    "message": errors.safe_text(task.get("message"), 300),
+                }
+            )
+            if len(row["failed_offers"]) >= MAX_FAILED_SHOWN:
+                break
+        if len(row["failed_offers"]) < failed:
+            warnings.append(
+                f"Command {command_id}: Allegro counts {failed} failed offers, the report "
+                f"lists {len(row['failed_offers'])}"
+            )
+    return row
 
 
 COMPOSITES: dict[str, Callable[[Context], dict[str, Any]]] = {

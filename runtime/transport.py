@@ -130,6 +130,8 @@ class AllegroTransport:
         self.committed = False
         #: Monotonic time after which no request may start (set by the operation).
         self.deadline: float | None = None
+        #: Requests started in this invocation.
+        self.calls = 0
 
     @property
     def connection(self) -> Connection:
@@ -202,6 +204,7 @@ class AllegroTransport:
         if remaining < MIN_CALL_WINDOW_SECONDS:
             raise DeadlineReached
         self._call_timeout = min(self._timeout_seconds, remaining)
+        self.calls += 1
         if mutating:
             self.mutated = True
         expires = None if self.deadline is None else self.deadline + MIN_CALL_WINDOW_SECONDS

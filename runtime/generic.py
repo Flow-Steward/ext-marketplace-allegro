@@ -39,19 +39,17 @@ from urllib.parse import quote
 
 from flowsteward_extension_sdk import parse_retry_after
 
-from . import budget, errors, files, nesting
+from . import budget, errors, files, nesting, outcome
 from .context import Context
-from .errors import ExtensionError, invalid
+from .errors import invalid
 from .params import check, text, wire
 from .transport import (
-    CHECK,
     MAX_ANSWER_BYTES,
     MAX_FILE_ANSWER_BYTES,
     Answer,
     Call,
     TooDeep,
     dumps_json,
-    unknown,
 )
 
 REGISTRY_FILE = Path(__file__).resolve().parent / "registry.json"
@@ -291,9 +289,7 @@ def answer_result(
         result.update(data=None, file=None, content_type=None, size_bytes=None)
     if plan.as_file:
         handle = None
-        if answer.unread:
-            warnings.append(unread_warning(shown, answer))
-        elif not answer.empty:
+        if not answer.empty:
             kind = entry["file"]["content_type"]
             # A text file (CSV, JSON) can carry the token like any answer; a binary one
             # (PDF, labels, attachments) is saved as Allegro sent it.
@@ -307,7 +303,7 @@ def answer_result(
             size_bytes=len(answer.raw) if handle else None,
         )
     elif write:
-        result["data"] = confirmed_data(context, entry, answer, shown, warnings)
+        result["data"] = outcome.write_outcome(context, entry, answer, shown, warnings)
     else:
         data: Any = None
         if not answer.empty:
@@ -347,68 +343,6 @@ def retry_after(answer: Answer) -> int | None:
         return None
     seconds = parse_retry_after(answer.headers.get("Retry-After"))
     return None if seconds is None else max(0, math.ceil(seconds))
-
-
-def unread_warning(shown: str, answer: Answer) -> str:
-    return (
-        f"Allegro confirmed {shown} (HTTP {answer.status}) but its answer {answer.unread}, so "
-        "it is not returned (data is empty): see the record in Allegro"
-    )
-
-
-def confirmed_data(
-    context: Context, entry: Mapping[str, Any], answer: Answer, shown: str, warnings: list[str]
-) -> Any:
-    """The data of a write Allegro confirmed with a documented success status.
-
-    In order: a body that was not read (too large, too late) leaves the write's facts
-    with data empty and a warning; where the specification documents only JSON for the
-    status, a non-empty body of another type, or one that does not start as JSON, is
-    not a documented answer (invalid_response, outcome unknown); a JSON body nested
-    deeper than ``nesting.MAX_ANSWER_DEPTH`` is not read (data empty, warning).
-    """
-    if answer.unread:
-        warnings.append(unread_warning(shown, answer))
-        return None
-    if answer.empty:
-        return None
-    promised = str(answer.status) in entry.get("json_success", ())
-    if promised and not _starts_as_json(answer):
-        raise _not_documented(shown, answer)
-    try:
-        return context.transport.json(answer)
-    except TooDeep:
-        warnings.append(
-            f"Allegro confirmed {shown} (HTTP {answer.status}) but its answer is nested "
-            f"deeper than {nesting.MAX_ANSWER_DEPTH} levels, so it is not returned "
-            "(data is empty); see the record in Allegro"
-        )
-        return None
-    except ValueError:
-        if promised:
-            raise _not_documented(shown, answer) from None
-        warnings.append(
-            f"Allegro confirmed {shown} (HTTP {answer.status}) but its answer is not "
-            "JSON; it is returned as text"
-        )
-        return context.transport.text(answer, 20_000)
-
-
-def _starts_as_json(answer: Answer) -> bool:
-    if answer.content_type and "json" not in answer.content_type:
-        return False
-    head = answer.raw[:4096].lstrip(b"\xef\xbb\xbf \t\r\n")
-    return head[:1] in {b"{", b"["}
-
-
-def _not_documented(shown: str, answer: Answer) -> ExtensionError:
-    kind = answer.content_type or "no content type"
-    return unknown(
-        f"Allegro answered {shown} with HTTP {answer.status}, but its body ({kind}) is not the "
-        "JSON the specification documents for it, so the outcome is not known" + CHECK,
-        errors.INVALID_RESPONSE,
-        answer.status,
-    )
 
 
 def processing_of(entry: Mapping[str, Any], status: int, location: str | None) -> dict[str, Any]:

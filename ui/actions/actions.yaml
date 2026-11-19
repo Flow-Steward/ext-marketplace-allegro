@@ -155,8 +155,9 @@ actions:
   title: Get stock and price update results
   description: 'Reads how far Allegro got with the commands of Update stock and prices: per command the
     number of offers done, failed and waiting, and for failed offers the offer ID and Allegro''s reason.
-    Give the commands output of that step. Needs allegro:api:sale:offers:write (Allegro asks for it to
-    read the reports).'
+    A command that cannot be read is returned as unread with the reason, and the step still returns the
+    others. Give the commands output of that step. Needs allegro:api:sale:offers:write (Allegro asks for
+    it to read the reports).'
   required_scopes:
   - extension:invoke
   handler:
@@ -172,6 +173,7 @@ actions:
     required: true
   result_fields:
   - commands
+  - unread_command_ids
   - all_completed
   - failed_count
   - warnings

@@ -401,8 +401,9 @@ operations:
   display_name: Get stock and price update results
   description: 'Reads how far Allegro got with the commands of Update stock and prices: per command the
     number of offers done, failed and waiting, and for failed offers the offer ID and Allegro''s reason.
-    Give the commands output of that step. Needs allegro:api:sale:offers:write (Allegro asks for it to
-    read the reports).'
+    A command that cannot be read is returned as unread with the reason, and the step still returns the
+    others. Give the commands output of that step. Needs allegro:api:sale:offers:write (Allegro asks for
+    it to read the reports).'
   operation_kind: source
   category: sales
   connection_type_ids:
@@ -445,8 +446,17 @@ operations:
       items:
         type: object
         additionalProperties: true
-      description: 'Each command: command_id, kind, completed, total, success, failed, waiting and failed_offers
-        (offer_id and message).'
+      description: 'Each command: command_id, kind, status (read, or unread with reason when it could
+        not be read: not found, rate limit, time-out, an invalid answer) and, when read, completed, total,
+        success, failed, waiting and failed_offers (offer_id and message).'
+  - name: unread_command_ids
+    value_type: array
+    schema:
+      type: array
+      items:
+        type: string
+      description: The commands not read (unread, or left out because the output or the time was full);
+        run the step again with them.
   - name: all_completed
     value_type: boolean
     schema:
@@ -465,6 +475,7 @@ operations:
       description: What the step could not do fully or what to check.
   result_fields:
   - result.commands
+  - result.unread_command_ids
   - result.all_completed
   - result.failed_count
   - result.warnings

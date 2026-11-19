@@ -207,16 +207,17 @@ def test_a_first_page_too_large_is_asked_again_with_half_the_records() -> None:
     def big(i: int) -> dict[str, Any]:
         return {**offer(i), "description": "x" * 10_000}
 
-    fake = FakeAllegro(*([lambda call: offers_page(call, 3000, big)] * 6))
+    fake = FakeAllegro(routes={"GET /sale/offers": lambda call: offers_page(call, 3000, big)})
     result = run("list_all_my_offers", {}, fake)
     assert result["ok"] is True, result.get("error")
     limits = [int(dict(c.query)["limit"]) for c in fake.calls]
-    assert limits[:3] == [1000, 500, 250]
+    assert limits[:4] == [1000, 500, 250, 1000]
     out = result["result"]
-    # 250 records fit; the next 250 do not: the step returns what fits and stops.
-    assert out["count"] == 250 and out["complete"] is False
-    assert out["next_offset"] == 250
+    # What fits is returned and the step stops exactly at the first record not returned.
+    assert 250 <= out["count"] < 3000 and out["complete"] is False
+    assert out["next_offset"] == out["count"]
     assert "output is full" in out["warnings"][-1]
+    assert budget.fits(result["result"])
 
 
 # -- G2: a confirmed write whose body is not read ----------------------------------------------

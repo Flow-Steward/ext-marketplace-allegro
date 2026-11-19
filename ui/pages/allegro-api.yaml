@@ -61,13 +61,13 @@ components:
 
     ### Get stock and price update results
 
-    Reads how far Allegro got with the commands of Update stock and prices: per command the number of offers done, failed and waiting, and for failed offers the offer ID and Allegro's reason. Give the commands output of that step. Needs allegro:api:sale:offers:write (Allegro asks for it to read the reports).
+    Reads how far Allegro got with the commands of Update stock and prices: per command the number of offers done, failed and waiting, and for failed offers the offer ID and Allegro's reason. A command that cannot be read is returned as unread with the reason, and the step still returns the others. Give the commands output of that step. Needs allegro:api:sale:offers:write (Allegro asks for it to read the reports).
 
     Action id `get_stock_and_price_update_results` · reads only · Allegro: `GET /sale/offer-quantity-change-commands/{commandId}`, `GET /sale/offer-quantity-change-commands/{commandId}/tasks`, `GET /sale/offer-price-change-commands/{commandId}`, `GET /sale/offer-price-change-commands/{commandId}/tasks`
 
     Inputs: `commands` (required).
 
-    Results: `commands`, `all_completed`, `failed_count`, `warnings`.
+    Results: `commands`, `unread_command_ids`, `all_completed`, `failed_count`, `warnings`.
 
     ### Get orders
 

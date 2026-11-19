@@ -320,7 +320,9 @@ COMPOSITES: list[dict[str, Any]] = [
         "description": (
             "Reads how far Allegro got with the commands of Update stock and prices: per "
             "command the number of offers done, failed and waiting, and for failed offers the "
-            "offer ID and Allegro's reason. Give the commands output of that step. Needs "
+            "offer ID and Allegro's reason. A command that cannot be read is returned as "
+            "unread with the reason, and the step still returns the others. Give the commands "
+            "output of that step. Needs "
             "allegro:api:sale:offers:write (Allegro asks for it to read the reports)."
         ),
         "inputs": [
@@ -347,7 +349,13 @@ COMPOSITES: list[dict[str, Any]] = [
                 "name": "commands",
                 "type": "array",
                 "items": {"type": "object", "additionalProperties": True},
-                "description": "Each command: command_id, kind, completed, total, success, failed, waiting and failed_offers (offer_id and message).",
+                "description": "Each command: command_id, kind, status (read, or unread with reason when it could not be read: not found, rate limit, time-out, an invalid answer) and, when read, completed, total, success, failed, waiting and failed_offers (offer_id and message).",
+            },
+            {
+                "name": "unread_command_ids",
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "The commands not read (unread, or left out because the output or the time was full); run the step again with them.",
             },
             {
                 "name": "all_completed",

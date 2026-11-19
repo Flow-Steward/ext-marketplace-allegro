@@ -77,16 +77,23 @@ def test_all_pages_are_read_until_the_total() -> None:
 
 
 def test_a_full_output_stops_with_where_to_continue() -> None:
-    page = [{"id": str(i), "name": "x" * 2000} for i in range(1000)]
-    page2 = [{"id": str(1000 + i), "name": "x" * 2000} for i in range(1000)]
-    fake = FakeAllegro(
-        ok({"offers": page, "totalCount": 5000}), ok({"offers": page2, "totalCount": 5000})
-    )
+    def answer(call: Any) -> Any:
+        query = dict(call.query)
+        start, limit = int(query["offset"]), int(query["limit"])
+        page = [{"id": str(i), "name": "x" * 2000} for i in range(start, start + limit)]
+        return ok({"offers": page, "totalCount": 5000})
+
+    fake = FakeAllegro(routes={"GET /sale/offers": answer})
     result = run("list_all_my_offers", {}, fake)
     out = result["result"]
     assert result["ok"] is True
-    assert out["complete"] is False and out["next_offset"] == 1000 and out["count"] == 1000
-    assert "next_offset 1000" in out["warnings"][-1]
+    # The second page does not fit whole: it is asked again with half the records, and
+    # after each page that fits the full size is asked again (N2).
+    limits = [int(dict(c.query)["limit"]) for c in fake.calls]
+    assert limits[:4] == [1000, 1000, 500, 1000]
+    assert out["complete"] is False and out["next_offset"] == out["count"]
+    assert 1500 <= out["count"] < 2000
+    assert f"next_offset {out['count']}" in out["warnings"][-1]
 
 
 def test_the_list_can_be_returned_as_a_file() -> None:
