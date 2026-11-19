@@ -12,6 +12,7 @@ from collections.abc import Mapping
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
+from . import numbers
 from .errors import invalid
 
 _PAIR_KEY_RE = re.compile(r"^[A-Za-z0-9._\-\[\]]{1,100}$")
@@ -24,7 +25,7 @@ def text(value: Any, what: str, *, max_length: int, min_length: int = 0) -> str:
     result = (
         value
         if isinstance(value, str)
-        else (format(value, "f") if isinstance(value, Decimal) else str(value))
+        else (numbers.plain(value) if isinstance(value, Decimal) else str(value))
     )
     result = result.strip()
     if not result:
@@ -61,7 +62,7 @@ def wire(value: Any) -> str:
     if isinstance(value, bool):
         return "true" if value else "false"
     if isinstance(value, Decimal):
-        return format(value, "f")
+        return numbers.plain(value)
     return str(value)
 
 

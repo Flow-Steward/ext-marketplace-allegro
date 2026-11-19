@@ -6,6 +6,14 @@ components:
   type: markdown
   title: Release history
   body: |
+    ## 0.1.1 — 2026-11-19
+
+    - Every step that changes data returns `processing`: `completed` when Allegro answered that the change is made, `accepted` when Allegro answered HTTP 202 or only registered a command (batch offer changes, price, stock, publication and promotion commands, Allegro Prices and AlleDiscount commands, shipment and pickup commands, tracking numbers, badges). With `accepted`, `applied` is false and `check` names the step that reads the outcome and the address Allegro returned. Update stock and prices returns the same.
+    - An answer with a success status the specification does not document for the operation is no longer taken as success: a read fails with `invalid_response`; a change fails with `invalid_response` and an unknown outcome, to be checked in Allegro.
+    - Numbers: a request number with more than 40 digits or an exponent outside −30…+30 is refused before anything is sent; such a number in Allegro's answer is kept as text in Allegro's own notation, so a confirmed change is never lost to it.
+    - Six operations that Allegro documents as retrieving, calculating, querying or parsing are now reads: Download shipment labels, Download shipment protocol, Get pickup proposals, Calculate offer fee and commission, Query Allegro Prices status of offers and Parse product ingredients. Test runs send them, and a label or protocol download saves its file.
+    - Get fulfillment stock takes `format`: `json` (default, as before) or `csv`, which saves Allegro's CSV as a workflow file; `limit`, `offset`, `sort` and `product_id` do not apply with `csv`.
+
     ## 0.1.0 — 2026-11-18
 
     First release, built on the Allegro REST API specification downloaded 2026-11-18 (OpenAPI 3.0.0, SHA-256 `f82541bb821c050d50f27792705090acfa4cb8d4f9796b60463cefc79fea14b9`).

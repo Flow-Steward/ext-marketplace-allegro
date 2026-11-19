@@ -5,11 +5,12 @@ from __future__ import annotations
 
 import json
 import sys
-from decimal import Decimal
 from collections.abc import Mapping, Sequence
+from decimal import Decimal
 from typing import Any
 
 from dispatcher import dispatch_runtime
+from runtime import numbers
 
 MAX_INPUT_BYTES = 2 * 1024 * 1024
 MAX_SERIALIZED_RESPONSE_BYTES = 9 * 512 * 1024
@@ -21,12 +22,14 @@ _CONTROL_TRANSLATION = {
 def main() -> int:
     raw = sys.stdin.buffer.read(MAX_INPUT_BYTES + 1)
     if len(raw) > MAX_INPUT_BYTES:
-        response = _error_response("invalid_payload", "The request exceeds its safe limit")
+        response = _refused("The request exceeds its safe limit")
     else:
         try:
             payload = _load_payload(raw)
+        except UnboundedNumber as exc:
+            response = _refused(str(exc))
         except (UnicodeDecodeError, json.JSONDecodeError):
-            response = _error_response("invalid_payload", "The request is not valid JSON")
+            response = _refused("The request is not valid JSON")
         else:
             response = dispatch_runtime(payload)
     final_response, serialized = _bounded_serialized_response(response)
@@ -35,18 +38,56 @@ def main() -> int:
     return 0 if final_response.get("ok") is True else 2
 
 
+class UnboundedNumber(ValueError):
+    """A number of the request is outside what this extension writes out in full."""
+
+
+def _float(text: str) -> Decimal:
+    number = numbers.read(text, integer=False)
+    if not isinstance(number, Decimal):
+        raise UnboundedNumber(
+            f"The request has a number with more than {numbers.MAX_DIGITS} digits or an "
+            f"exponent outside {numbers.MIN_EXPONENT}..{numbers.MAX_EXPONENT}; nothing was sent"
+        )
+    return number
+
+
+def _int(text: str) -> int:
+    number = numbers.read(text, integer=True)
+    if not isinstance(number, int):
+        raise UnboundedNumber(
+            f"The request has a whole number with more than {numbers.MAX_DIGITS} digits; "
+            "nothing was sent"
+        )
+    return number
+
+
+def _constant(text: str) -> Any:
+    raise UnboundedNumber(f"The request has {text[:20]}, which is not a JSON number")
+
+
 def _load_payload(raw: bytes) -> dict[str, Any]:
     """The request, with every number that has a point read as ``Decimal``.
 
     1234567890.12345678 reaches the checks as written, not rounded through float.
     Nothing in the host's envelope is used as a float, so the whole request is
-    read the same way.
+    read the same way. A number outside ``runtime.numbers``' bounds (digits and
+    exponent, from ``Decimal.as_tuple()``) refuses the request before it is used,
+    so ``1e1000000`` is never written out in full.
     """
     text = raw.decode("utf-8")
     if not text.strip():
         return {}
-    payload = json.loads(text, parse_float=Decimal)
+    payload = json.loads(text, parse_float=_float, parse_int=_int, parse_constant=_constant)
     return payload if isinstance(payload, dict) else {}
+
+
+def _refused(message: str) -> dict[str, Any]:
+    """A request refused before anything was read or sent."""
+    response = _error_response("invalid_payload", message)
+    response["definitely_no_external_effect"] = True
+    response["external_effect_status"] = "failed"
+    return response
 
 
 def _bounded_serialized_response(response: Mapping[str, Any]) -> tuple[dict[str, Any], bytes]:

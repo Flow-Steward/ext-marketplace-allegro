@@ -82,7 +82,7 @@ components:
 
     ### Add order tracking number
 
-    Add a parcel tracking number (shipment) to given order line items. This resource is rate limited to 50 requests per second. Needs the Allegro permission allegro:api:orders:write.
+    Add a parcel tracking number (shipment) to given order line items. This resource is rate limited to 50 requests per second. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get order tracking numbers. Needs the Allegro permission allegro:api:orders:write.
 
     Action id `add_order_tracking_number` · changes data in Allegro · Allegro: `POST /order/checkout-forms/{id}/shipments`
 

@@ -8,7 +8,8 @@ from decimal import Decimal
 from typing import Any
 
 import pytest
-from support import BETA, PUBLIC, Artifacts, FakeAllegro, ok, raw, run, text_of
+import yaml
+from support import BETA, BUNDLE, PUBLIC, Artifacts, FakeAllegro, ok, raw, run, text_of
 
 from runtime import budget, catalog, generic
 
@@ -62,16 +63,20 @@ def test_a_test_run_checks_the_inputs_and_sends_nothing(operation_id: str) -> No
     assert result["definitely_no_external_effect"] is True
     assert result["external_effect_status"] == "failed"
     assert result["result"]["warnings"]
+    out = result["result"]
+    assert out["processing"] is None and out["applied"] is False and out["check"] is None
 
 
 @pytest.mark.parametrize("operation_id", WRITES)
 def test_a_real_write_sends_exactly_one_request(operation_id: str) -> None:
     entry = REGISTRY[operation_id]
-    answer = (
-        raw(200, b"%PDF-1.4", "application/octet-stream")
-        if entry["answer"] == "file"
-        else ok({"id": "1"})
-    )
+    status = int(next(s for s in entry["success"] if s.startswith("2")))
+    if status == 204:
+        answer = raw(204, b"")
+    elif entry["answer"] == "file":
+        answer = raw(status, b"%PDF-1.4", "application/octet-stream")
+    else:
+        answer = ok({"id": "1"}, status)
     fake = FakeAllegro(answer)
     artifacts = Artifacts({"upload-1": b"%PDF-1.4 file"})
     result = run(operation_id, minimal_input(entry), fake, artifacts=artifacts)
@@ -81,6 +86,9 @@ def test_a_real_write_sends_exactly_one_request(operation_id: str) -> None:
     assert call.verb == entry["method"]
     assert result["external_effect_status"] == "succeeded"
     assert result["definitely_no_external_effect"] is False
+    accepted = status == 202 or entry["processing"]["accepted_always"]
+    assert result["result"]["processing"] == ("accepted" if accepted else "completed")
+    assert result["result"]["applied"] is (not accepted)
 
 
 def test_a_test_run_still_refuses_a_bad_input() -> None:
@@ -268,21 +276,60 @@ def test_a_read_answer_that_is_not_json_is_refused_and_a_write_keeps_it_as_text(
     assert "not JSON" in result["result"]["warnings"][0]
 
 
-def test_an_accepted_request_still_processing_says_so_with_its_location() -> None:
-    fake = FakeAllegro(
-        ok(
-            {"id": "1"},
-            202,
-            {
-                "Content-Type": PUBLIC,
-                "Location": "https://api.allegro.pl/sale/product-offers/1/operations/op",
-            },
-        )
-    )
+def test_http_202_is_accepted_not_applied_and_names_its_check() -> None:
+    location = "https://api.allegro.pl/sale/product-offers/1/operations/op"
+    fake = FakeAllegro(ok({"id": "1"}, 202, {"Content-Type": PUBLIC, "Location": location}))
     result = run("edit_offer", {"offer_id": "1", "body": {"a": 1}}, fake)
-    assert result["result"]["status"] == 202
-    assert result["result"]["location"].endswith("/operations/op")
-    assert "still processing" in result["result"]["warnings"][0]
+    assert result["ok"] is True
+    # Accepted: resending would create a duplicate, so the effect stays succeeded for Core.
+    assert result["external_effect_status"] == "succeeded"
+    out = result["result"]
+    assert out["status"] == 202
+    assert out["processing"] == "accepted" and out["applied"] is False
+    assert out["check"] == {"operation_id": "check_offer_processing_status", "location": location}
+
+
+@pytest.mark.parametrize(
+    ("operation_id", "status"),
+    [("edit_offer", 200), ("create_offer_from_product", 201), ("delete_draft_offer", 204)],
+)
+def test_a_synchronous_answer_is_completed(operation_id: str, status: int) -> None:
+    answer = raw(204, b"") if status == 204 else ok({"id": "1"}, status)
+    fake = FakeAllegro(answer)
+    result = run(operation_id, minimal_input(REGISTRY[operation_id]), fake)
+    assert result["ok"] is True, result
+    out = result["result"]
+    assert out["processing"] == "completed" and out["applied"] is True and out["check"] is None
+
+
+def test_a_registered_command_is_accepted_whatever_its_status() -> None:
+    entry = REGISTRY["change_price_of_many_offers"]
+    location = "https://api.allegro.pl/sale/offer-price-change-commands/c"
+    fake = FakeAllegro(ok({"id": "c"}, 201, {"Content-Type": PUBLIC, "Location": location}))
+    result = run("change_price_of_many_offers", minimal_input(entry), fake)
+    out = result["result"]
+    assert out["processing"] == "accepted" and out["applied"] is False
+    assert out["check"] == {
+        "operation_id": "get_price_change_command_summary",
+        "location": location,
+    }
+    # A command without a documented check step still says it was only accepted.
+    entry = REGISTRY["change_buy_now_price_of_offer"]
+    result = run("change_buy_now_price_of_offer", minimal_input(entry), FakeAllegro(ok({}, 200)))
+    out = result["result"]
+    assert out["processing"] == "accepted" and out["applied"] is False
+    assert out["check"] == {"operation_id": None, "location": None}
+
+
+def test_every_write_declares_and_returns_processing() -> None:
+    manifest = yaml.safe_load((BUNDLE / "contracts/operation_manifest.yaml").read_text())
+    for op in manifest["operations"]:
+        names = [o["name"] for o in op["outputs"]]
+        write = op["operation_kind"] == "action"
+        assert ({"processing", "applied", "check"} <= set(names)) is write, op["operation_id"]
+    for oid in WRITES:
+        check = REGISTRY[oid]["processing"]["check"]
+        assert check is None or REGISTRY[check]["kind"] == "read", oid
 
 
 def test_the_etag_and_if_match_round_trip() -> None:
@@ -324,3 +371,59 @@ def test_every_generated_step_is_routable() -> None:
     assert set(REGISTRY) <= catalog.OPERATION_IDS
     for entry in REGISTRY.values():
         json.dumps(entry)
+
+
+# -- reads Allegro documents with another method than GET -------------------------------
+
+
+def test_a_test_run_downloads_shipment_labels_as_a_read() -> None:
+    fake = FakeAllegro(raw(200, b"%PDF-1.4 labels", "application/octet-stream"))
+    artifacts = Artifacts()
+    result = run(
+        "download_shipment_labels",
+        {"body": {"shipmentIds": ["s1"]}},
+        fake,
+        artifacts=artifacts,
+        test_mode=True,
+    )
+    assert result["ok"] is True, result
+    assert len(fake.calls) == 1 and fake.calls[0].verb == "POST"
+    assert result["result"]["file"] == "artifact-1"
+    assert artifacts.saved[0]["data"] == b"%PDF-1.4 labels"
+    assert "external_effect_status" not in result
+    assert "processing" not in result["result"]
+
+
+def test_a_network_failure_of_a_non_get_read_is_an_ordinary_read_failure() -> None:
+    fake = FakeAllegro(ConnectionResetError())
+    result = run("download_shipment_protocol", {"body": {"shipmentIds": ["s1"]}}, fake)
+    assert result["error_code"] == "connection_failed"
+    assert result["definitely_no_external_effect"] is True
+    assert result["external_effect_status"] == "failed"
+
+
+# -- a format other than JSON --------------------------------------------------------------
+
+
+def test_fulfillment_stock_is_json_by_default() -> None:
+    fake = FakeAllegro(ok({"stock": []}))
+    result = run("get_fulfillment_stock", {}, fake)
+    assert result["ok"] is True
+    assert fake.calls[0].headers["accept"] == PUBLIC
+    out = result["result"]
+    assert out["data"] == {"stock": []} and out["file"] is None
+
+
+def test_fulfillment_stock_as_csv_is_a_workflow_file() -> None:
+    fake = FakeAllegro(raw(200, b"productId;available\nx;3\n", "text/csv"))
+    artifacts = Artifacts()
+    result = run("get_fulfillment_stock", {"format": "csv"}, fake, artifacts=artifacts)
+    assert result["ok"] is True, result
+    assert fake.calls[0].headers["accept"] == "text/csv"
+    out = result["result"]
+    assert out["data"] is None and out["file"] == "artifact-1"
+    assert out["content_type"] == "text/csv" and out["size_bytes"] == 24
+    assert artifacts.saved[0]["content_type"] == "text/csv"
+    assert run("get_fulfillment_stock", {"format": "xml"}, FakeAllegro())["error_code"] == (
+        "invalid_payload"
+    )

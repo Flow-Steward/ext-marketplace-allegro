@@ -26,6 +26,7 @@ Allegro is a Polish online marketplace where shops and companies sell their good
 ## Why teams use it
 
 - **A change is not sent twice.** Each stock or price command gets an ID derived from your batch key and its content, so running the same update again is recognized by Allegro instead of being applied twice. Changes are never retried automatically.
+- **Accepted is not mistaken for applied.** Every step that changes data returns `processing`: `completed` when Allegro answered that the change is made, `accepted` when Allegro accepted the request (HTTP 202) or registered a command it applies afterwards. With `accepted`, `applied` is false and `check` names the step that reads the outcome. An answer with a status Allegro does not document for the operation is never taken as success.
 - **Amounts without rounding errors.** Prices are exact decimals with at most two places, from input to Allegro and back.
 - **A test run changes nothing.** Writes are declared external effects, and Flow Steward suppresses them in test runs. Allegro Sandbox gives a separate test marketplace on top of that.
 - **The whole documented API is covered.** 276 steps: 6 everyday steps plus a step for each of the 270 operations of the Allegro REST API.
@@ -57,7 +58,8 @@ All 270 operations of the Allegro REST API are also available as steps: offers a
 - An Allegro application registered by your company at apps.developer.allegro.pl; its Client ID and Client Secret are entered in the connection. Allegro Sandbox uses its own application registered at apps.developer.allegro.pl.allegrosandbox.pl and the **Connection (Sandbox)** page.
 - The Allegro permissions the steps name, for example `allegro:api:sale:offers:read` to read offers, `allegro:api:sale:offers:write` to change stock and prices, `allegro:api:orders:read` for orders; `allegro:api:profile:read` is always needed.
 - Allegro's batch stock change accepts a quantity of 1 or more; to stop selling an offer, end it with **Publish or end offers**.
-- Allegro applies batch stock and price changes asynchronously: **Update stock and prices** registers the commands, and **Get stock and price update results** reads the outcome per offer.
+- Allegro applies batch stock and price changes asynchronously: **Update stock and prices** registers the commands (`processing` is `accepted`), and **Get stock and price update results** reads the outcome per offer.
+- Downloading shipment labels and protocols, pickup proposals, the fee preview, the Allegro Prices query and ingredient parsing change nothing in Allegro, so test runs send them. **Get fulfillment stock** returns JSON, or with `format` `csv` a CSV workflow file.
 - Allegro keeps an authorization for three months without use and limits the request rate; an HTTP 429 answer says how long to wait.
 - Flow Steward 0.9.16 or later.
 

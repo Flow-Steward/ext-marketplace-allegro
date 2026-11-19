@@ -7,11 +7,18 @@ import subprocess
 import sys
 from typing import Any
 
-import main
+import pytest
 from support import BUNDLE, TOKEN, payload
+
+import main
 
 
 def invoke(request: Any) -> tuple[int, dict[str, Any]]:
+    code, text = invoke_raw(request)
+    return code, json.loads(text)
+
+
+def invoke_raw(request: Any) -> tuple[int, str]:
     proc = subprocess.run(
         [sys.executable, "main.py"],
         cwd=BUNDLE,
@@ -21,7 +28,7 @@ def invoke(request: Any) -> tuple[int, dict[str, Any]]:
         timeout=60,
         check=False,
     )
-    return proc.returncode, json.loads(proc.stdout)
+    return proc.returncode, proc.stdout
 
 
 def test_a_test_mode_write_answers_without_network() -> None:
@@ -88,3 +95,38 @@ def test_health_answers_without_network() -> None:
     assert report["ok"] is True
     assert report["extension_id"] == "flowsteward.allegro"
     assert report["declared_operations"] == 277
+
+
+def _edit_offer_request(number: str, *, test_mode: bool = True) -> bytes:
+    raw = (
+        '{"mode":"action","contract_version":"extension_host_v2","runtime_context":{"test_mode":'
+        + ("true" if test_mode else "false")
+        + ',"group_id":null,"for_each_id":null,"step_id":"s","step_execution_id":"e"},'
+        '"action":{"action_id":"edit_offer","input":{"connection_ref":"c","offer_id":"1",'
+        '"body":{"price":' + number + '}},"target":{"connection":{"connection_id":"c",'
+        '"connection_type":"allegro","secrets":{"access_token":"' + TOKEN + '"}}}}}'
+    )
+    return raw.encode()
+
+
+@pytest.mark.parametrize(
+    "number",
+    ["1e1000000", "1e-1000000", "9" * 5000, "1" * 41, "1e31"],
+    ids=["1e1000000", "1e-1000000", "int-5000-digits", "int-41-digits", "1e31"],
+)
+def test_a_number_outside_the_bounds_is_refused_before_anything_is_sent(number: str) -> None:
+    for test_mode in (True, False):
+        code, text = invoke_raw(_edit_offer_request(number, test_mode=test_mode))
+        # The refusal is small: the number was never written out in full.
+        assert len(text) < 2_000, len(text)
+        response = json.loads(text)
+        assert code == 2
+        assert response["error_code"] == "invalid_payload"
+        assert response["definitely_no_external_effect"] is True
+        assert response["external_effect_status"] == "failed"
+
+
+def test_a_number_inside_the_bounds_still_reaches_the_step() -> None:
+    code, response = invoke(_edit_offer_request("12345678901234567890.1234567890"))
+    assert code == 0, response
+    assert response["definitely_no_external_effect"] is True

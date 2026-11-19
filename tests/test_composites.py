@@ -6,7 +6,7 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-from support import Artifacts, FakeAllegro, errors_holder, ok, refuse, run, text_of
+from support import Artifacts, FakeAllegro, errors_holder, ok, raw, refuse, run, text_of
 
 from runtime import composites
 
@@ -281,6 +281,36 @@ def test_the_commands_are_sent_once_each_with_the_documented_bodies() -> None:
         "type": "FIXED_PRICE",
         "price": {"amount": "49.90", "currency": "PLN"},
     }
+
+
+def test_registered_commands_are_accepted_not_applied() -> None:
+    result = run(
+        "update_stock_and_prices",
+        {"rows": ROWS, "batch_key": "run-1"},
+        FakeAllegro(echo, echo, echo),
+    )
+    out = result["result"]
+    assert [c["status"] for c in out["commands"]] == ["registered"] * 3
+    assert out["processing"] == "accepted" and out["applied"] is False
+    assert out["check"] == {
+        "operation_id": "get_stock_and_price_update_results",
+        "location": None,
+    }
+
+
+def test_an_undocumented_success_status_is_not_a_registered_command() -> None:
+    # The batch price change documents 201; a 204 without a body is not taken as registered.
+    rows = [{"offer_id": "13", "price": "49.90"}]
+    fake = FakeAllegro(raw(204, b""))
+    result = run("update_stock_and_prices", {"rows": rows, "batch_key": "k"}, fake)
+    assert result["ok"] is False
+    assert result["error_code"] == "invalid_response"
+    assert result["external_effect_status"] == "timeout_unknown"
+    assert result["definitely_no_external_effect"] is False
+    assert "HTTP 204" in result["error"] and "201" in result["error"]
+    assert "0 of 1 commands are registered" in result["error"]
+    assert "may or may not be registered" in result["error"]
+    assert len(fake.calls) == 1
 
 
 def test_a_command_already_registered_is_not_applied_again() -> None:

@@ -48,6 +48,11 @@
    "method": "POST",
    "path": "/account/additional-emails",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -118,6 +123,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "403": true,
@@ -190,6 +200,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "403": true,
@@ -236,7 +251,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Add a parcel tracking number (shipment) to given order line items. This resource is rate limited to 50 requests per second. Needs the Allegro permission allegro:api:orders:write.",
+   "description": "Add a parcel tracking number (shipment) to given order line items. This resource is rate limited to 50 requests per second. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get order tracking numbers. Needs the Allegro permission allegro:api:orders:write.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -271,6 +286,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_order_tracking_numbers",
+    "check_title": "Get order tracking numbers"
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -336,6 +356,11 @@
    "method": "POST",
    "path": "/fulfillment/tax-id",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -412,6 +437,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -458,7 +488,7 @@
     "required": false
    },
    "deprecated": false,
-   "description": "This resource allows you to apply for a badge. Most badges involve additional fee charged. Your badge application will be verified and you will be notified about the verification status via e-mail. You can use *Location* provided in header of the response to track your application status. Application will be removed after 30 days when status of the application was changed form PROCESSED or DECLINED. Needs the Allegro permission allegro:api:campaigns.",
+   "description": "This resource allows you to apply for a badge. Most badges involve additional fee charged. Your badge application will be verified and you will be notified about the verification status via e-mail. You can use *Location* provided in header of the response to track your application status. Application will be removed after 30 days when status of the application was changed form PROCESSED or DECLINED. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get badge application. Needs the Allegro permission allegro:api:campaigns.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -483,6 +513,11 @@
    "method": "POST",
    "path": "/sale/badges",
    "path_params": [],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_badge_application",
+    "check_title": "Get badge application"
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -548,6 +583,11 @@
    "method": "POST",
    "path": "/order/refund-claims",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -621,6 +661,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -698,6 +743,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -757,7 +807,7 @@
      }
     }
    ],
-   "kind": "write",
+   "kind": "read",
    "method": "POST",
    "path": "/pricing/offer-fee-preview",
    "path_params": [],
@@ -821,6 +871,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -882,6 +937,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -926,7 +986,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to cancel parcel. Needs the Allegro permission allegro:api:shipments:write.",
+   "description": "Use this resource to cancel parcel. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get shipment cancellation status. Needs the Allegro permission allegro:api:shipments:write.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -951,6 +1011,11 @@
    "method": "POST",
    "path": "/shipment-management/shipments/cancel-commands",
    "path_params": [],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_shipment_cancellation_status",
+    "check_title": "Get shipment cancellation status"
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -994,7 +1059,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to modify the automatic pricing rules of multiple offers at the same time. This resource is rate limited to 150 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Needs the Allegro permission allegro:api:sale:offers:write.",
+   "description": "Use this resource to modify the automatic pricing rules of multiple offers at the same time. This resource is rate limited to 150 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get automatic pricing command summary. Needs the Allegro permission allegro:api:sale:offers:write.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -1019,6 +1084,11 @@
    "method": "POST",
    "path": "/sale/offer-price-automation-commands",
    "path_params": [],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_automatic_pricing_command_summary",
+    "check_title": "Get automatic pricing command summary"
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -1062,7 +1132,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to change the Buy Now price in a single offer. Needs the Allegro permission allegro:api:sale:offers:write.",
+   "description": "Use this resource to change the Buy Now price in a single offer. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome from Allegro afterwards. Needs the Allegro permission allegro:api:sale:offers:write.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -1106,6 +1176,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": true,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {},
    "scopes": [
@@ -1180,6 +1255,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -1220,7 +1300,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Change price of offers. This resource is rate limited to 150 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Needs the Allegro permission allegro:api:sale:offers:write.",
+   "description": "Change price of offers. This resource is rate limited to 150 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get price change command summary. Needs the Allegro permission allegro:api:sale:offers:write.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -1255,6 +1335,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_price_change_command_summary",
+    "check_title": "Get price change command summary"
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -1298,7 +1383,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Bulk price and stock modification. Contrary to standard batch price or stock modification, it lets you modify both price and stock modification across multiple offers, or within the same offer but in a separate modification unit. Change price and stock of offers. This resource is rate limited to 150 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Beta in Allegro: it may still change. Needs the Allegro permission allegro:api:sale:offers:write.",
+   "description": "Bulk price and stock modification. Contrary to standard batch price or stock modification, it lets you modify both price and stock modification across multiple offers, or within the same offer but in a separate modification unit. Change price and stock of offers. This resource is rate limited to 150 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Beta in Allegro: it may still change. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get price and stock command summary (beta). Needs the Allegro permission allegro:api:sale:offers:write.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -1323,6 +1408,11 @@
    "method": "POST",
    "path": "/sale/offer-bulk-modification-commands",
    "path_params": [],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_price_and_stock_command_summary_beta",
+    "check_title": "Get price and stock command summary (beta)"
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -1364,7 +1454,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to modify promotion packages on multiple offers at once. Needs the Allegro permission allegro:api:sale:offers:write.",
+   "description": "Use this resource to modify promotion packages on multiple offers at once. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get promotion package command summary. Needs the Allegro permission allegro:api:sale:offers:write.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -1399,6 +1489,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_promotion_package_command_summary",
+    "check_title": "Get promotion package command summary"
+   },
    "query": [],
    "refusals": {
     "401": true,
@@ -1473,6 +1568,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": true,
@@ -1512,7 +1612,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Change quantity of multiple offers. This resource is rate limited to 250 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Needs the Allegro permission allegro:api:sale:offers:write.",
+   "description": "Change quantity of multiple offers. This resource is rate limited to 250 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get stock change command summary. Needs the Allegro permission allegro:api:sale:offers:write.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -1547,6 +1647,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_stock_change_command_summary",
+    "check_title": "Get stock change command summary"
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -1689,6 +1794,11 @@
    "method": "POST",
    "path": "/sale/offer-additional-services/groups",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -1756,6 +1866,11 @@
    "method": "POST",
    "path": "/fulfillment/advance-ship-notices",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -1825,6 +1940,11 @@
    "method": "POST",
    "path": "/sale/price-automation/rules",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -1894,6 +2014,11 @@
    "method": "POST",
    "path": "/sale/issues/attachments",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -1941,6 +2066,11 @@
    "method": "POST",
    "path": "/sale/flexible-bundles",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -2009,6 +2139,11 @@
    "method": "POST",
    "path": "/after-sales-service-conditions/implied-warranties",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -2077,6 +2212,11 @@
    "method": "POST",
    "path": "/messaging/message-attachments",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -2141,6 +2281,11 @@
    "method": "POST",
    "path": "/sale/offer-attachments",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -2203,6 +2348,11 @@
    "method": "POST",
    "path": "/sale/offer-contacts",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -2270,7 +2420,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to create offer based on product. Note that requests may be limited. Needs the Allegro permission allegro:api:sale:offers:write.",
+   "description": "Use this resource to create offer based on product. Note that requests may be limited. When Allegro answers HTTP 202 it has accepted the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Check offer processing status. Needs the Allegro permission allegro:api:sale:offers:write.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -2295,6 +2445,11 @@
    "method": "POST",
    "path": "/sale/product-offers",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": "check_offer_processing_status",
+    "check_title": "Check offer processing status"
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -2363,6 +2518,11 @@
    "method": "POST",
    "path": "/sale/offer-tags",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -2449,6 +2609,11 @@
    "method": "POST",
    "path": "/points-of-service",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -2519,6 +2684,11 @@
    "method": "POST",
    "path": "/sale/loyalty/promotions",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -2586,6 +2756,11 @@
    "method": "POST",
    "path": "/sale/responsible-persons",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -2651,6 +2826,11 @@
    "method": "POST",
    "path": "/sale/responsible-producers",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -2726,6 +2906,11 @@
    "method": "POST",
    "path": "/after-sales-service-conditions/return-policies",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -2768,7 +2953,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to create shipment for delivery. Please check also new resource '/shipment-management/delivery-proposals/{orderId}' to get prefilled request body for this resource. Needs the Allegro permission allegro:api:shipments:write.",
+   "description": "Use this resource to create shipment for delivery. Please check also new resource '/shipment-management/delivery-proposals/{orderId}' to get prefilled request body for this resource. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get shipment creation status. Needs the Allegro permission allegro:api:shipments:write.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -2793,6 +2978,11 @@
    "method": "POST",
    "path": "/shipment-management/shipments/create-commands",
    "path_params": [],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_shipment_creation_status",
+    "check_title": "Get shipment creation status"
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -2865,6 +3055,11 @@
    "method": "POST",
    "path": "/sale/shipping-rates",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -2932,6 +3127,11 @@
    "method": "POST",
    "path": "/sale/size-tables",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -3000,6 +3200,11 @@
    "method": "POST",
    "path": "/after-sales-service-conditions/warranties",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -3064,6 +3269,11 @@
    "method": "POST",
    "path": "/after-sales-service-conditions/attachments",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -3126,6 +3336,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": true,
@@ -3185,6 +3400,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": true,
@@ -3254,6 +3474,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -3314,6 +3539,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -3375,6 +3605,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -3435,6 +3670,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -3476,6 +3716,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": true,
@@ -3535,6 +3780,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -3595,6 +3845,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": true,
@@ -3654,6 +3909,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": true,
@@ -3723,6 +3983,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [
     {
      "description": "Offer element for which translation should be deleted. If not provided, translations for all elements will be deleted.",
@@ -3809,6 +4074,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -3869,6 +4139,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": true,
@@ -3931,6 +4206,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -4261,7 +4541,7 @@
      }
     }
    ],
-   "kind": "write",
+   "kind": "read",
    "method": "POST",
    "path": "/shipment-management/label",
    "path_params": [],
@@ -4332,7 +4612,7 @@
      }
     }
    ],
-   "kind": "write",
+   "kind": "read",
    "method": "POST",
    "path": "/shipment-management/protocol",
    "path_params": [],
@@ -4402,7 +4682,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to edit an offer. This resource allows you to edit each field independently, so you can update a single field, such as the price or quantity, several fields, or all supported offer fields in a single request. In general, fields omitted from the request remain unchanged. The request follows RFC 7396: arrays are replaced as a whole, and setting a field to null removes it. The specification names no Allegro permission for it.",
+   "description": "Use this resource to edit an offer. This resource allows you to edit each field independently, so you can update a single field, such as the price or quantity, several fields, or all supported offer fields in a single request. In general, fields omitted from the request remain unchanged. The request follows RFC 7396: arrays are replaced as a whole, and setting a field to null removes it. When Allegro answers HTTP 202 it has accepted the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Check offer processing status. The specification names no Allegro permission for it.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -4437,6 +4717,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": "check_offer_processing_status",
+    "check_title": "Check offer processing status"
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -4480,7 +4765,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to submit a command to exclude offers from the Allegro Prices program. Returns a command ID that can be used to track the processing status. Needs the Allegro permission allegro:api:campaigns.",
+   "description": "Use this resource to submit a command to exclude offers from the Allegro Prices program. Returns a command ID that can be used to track the processing status. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get Allegro Prices exclusion status. Needs the Allegro permission allegro:api:campaigns.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -4505,6 +4790,11 @@
    "method": "POST",
    "path": "/sale/allegro-prices/offers/exclusion-commands",
    "path_params": [],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_allegro_prices_exclusion_status",
+    "check_title": "Get Allegro Prices exclusion status"
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -8602,7 +8892,15 @@
    "beta": false,
    "body": null,
    "deprecated": false,
-   "description": "Use this resource to get a list of the products belonging to the seller, which are in Allegro Warehouse. Needs the Allegro permission allegro:api:fulfillment:read.",
+   "description": "Use this resource to get a list of the products belonging to the seller, which are in Allegro Warehouse. With format csv the answer is saved as a workflow file. Needs the Allegro permission allegro:api:fulfillment:read.",
+   "file": {
+    "content_type": "text/csv",
+    "filename": "allegro-get-fulfillment-stock.csv"
+   },
+   "formats": {
+    "csv": "text/csv",
+    "json": "application/vnd.allegro.public.v1+json"
+   },
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -12185,7 +12483,7 @@
      }
     }
    ],
-   "kind": "write",
+   "kind": "read",
    "method": "POST",
    "path": "/shipment-management/pickup-proposals",
    "path_params": [],
@@ -15536,6 +15834,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -15576,7 +15879,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to modify multiple offers at once. This resource is rate limited to 250 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Needs the Allegro permission allegro:api:sale:offers:write.",
+   "description": "Use this resource to modify multiple offers at once. This resource is rate limited to 250 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get offer modification command summary. Needs the Allegro permission allegro:api:sale:offers:write.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -15611,6 +15914,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_offer_modification_command_summary",
+    "check_title": "Get offer modification command summary"
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -15677,7 +15985,7 @@
      }
     }
    ],
-   "kind": "write",
+   "kind": "read",
    "method": "POST",
    "path": "/ingredients/parse",
    "path_params": [],
@@ -15756,6 +16064,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -15831,6 +16144,11 @@
    "method": "POST",
    "path": "/sale/product-proposals",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -15918,6 +16236,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -15958,7 +16281,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to modify multiple offers publication at once. This resource is rate limited to 250 000 offer changes per hour or 9000 offer changes per minute. Needs the Allegro permission allegro:api:sale:offers:write.",
+   "description": "Use this resource to modify multiple offers publication at once. This resource is rate limited to 250 000 offer changes per hour or 9000 offer changes per minute. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get publication command summary. Needs the Allegro permission allegro:api:sale:offers:write.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -15993,6 +16316,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_publication_command_summary",
+    "check_title": "Get publication command summary"
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -16060,7 +16388,7 @@
      }
     }
    ],
-   "kind": "write",
+   "kind": "read",
    "method": "POST",
    "path": "/sale/allegro-prices/offers-queries",
    "path_params": [],
@@ -16142,6 +16470,11 @@
    "method": "POST",
    "path": "/payments/refunds",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -16219,6 +16552,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -16296,6 +16634,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -16338,7 +16681,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to request a pickup of shipments. Needs the Allegro permission allegro:api:shipments:write.",
+   "description": "Use this resource to request a pickup of shipments. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get pickup request status. Needs the Allegro permission allegro:api:shipments:write.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -16363,6 +16706,11 @@
    "method": "POST",
    "path": "/shipment-management/pickups/create-commands",
    "path_params": [],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_pickup_request_status",
+    "check_title": "Get pickup request status"
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -16642,6 +16990,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -16711,6 +17064,11 @@
    "method": "PUT",
    "path": "/fulfillment/removal/preferences",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": true,
@@ -16781,6 +17139,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [
     {
      "description": "Checkout form revision.",
@@ -16863,6 +17226,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [
     {
      "description": "Checkout form revision.",
@@ -16917,7 +17285,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to submit the Advance Ship Notice. After this operation, updates of the Advance Ship Notice are limited to selected properties only. See PUT /fulfillment/advance-ship-notices/{id}/submitted. Needs the Allegro permission allegro:api:fulfillment:write.",
+   "description": "Use this resource to submit the Advance Ship Notice. After this operation, updates of the Advance Ship Notice are limited to selected properties only. See PUT /fulfillment/advance-ship-notices/{id}/submitted. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get advance ship notice submission status. Needs the Allegro permission allegro:api:fulfillment:write.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -16952,6 +17320,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_advance_ship_notice_submission_status",
+    "check_title": "Get advance ship notice submission status"
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -16990,7 +17363,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to create a command for submitting an offer. Offer will be submitted to the AlleDiscount campaign only if command is processed successfully. Needs the Allegro permission allegro:api:campaigns.",
+   "description": "Use this resource to create a command for submitting an offer. Offer will be submitted to the AlleDiscount campaign only if command is processed successfully. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get AlleDiscount submission status. Needs the Allegro permission allegro:api:campaigns.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -17010,6 +17383,11 @@
    "method": "POST",
    "path": "/sale/alle-discount/submit-offer-commands",
    "path_params": [],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_alle_discount_submission_status",
+    "check_title": "Get AlleDiscount submission status"
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -17051,7 +17429,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to submit a command to add offers to the Allegro Prices program. Returns a command ID that can be used to track the processing status. Needs the Allegro permission allegro:api:campaigns.",
+   "description": "Use this resource to submit a command to add offers to the Allegro Prices program. Returns a command ID that can be used to track the processing status. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get Allegro Prices submission status. Needs the Allegro permission allegro:api:campaigns.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -17076,6 +17454,11 @@
    "method": "POST",
    "path": "/sale/allegro-prices/offers/submit-offer-commands",
    "path_params": [],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_allegro_prices_submission_status",
+    "check_title": "Get Allegro Prices submission status"
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -17216,6 +17599,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -17298,6 +17686,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -17385,6 +17778,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -17452,6 +17850,11 @@
    "method": "PATCH",
    "path": "/sale/allegro-prices/accounts/participations",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -17528,6 +17931,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -17598,6 +18006,11 @@
    "method": "PUT",
    "path": "/sale/delivery-settings",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": true,
@@ -17655,6 +18068,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -17733,6 +18151,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -17771,7 +18194,7 @@
     "required": false
    },
    "deprecated": false,
-   "description": "This resource allows you to update a campaign badge for the given offer. You can use *Location* provided in header of the response to track your update status. Update offer price in a campaign or finish marking an offer in a campaign. Needs the Allegro permission allegro:api:campaigns.",
+   "description": "This resource allows you to update a campaign badge for the given offer. You can use *Location* provided in header of the response to track your update status. Update offer price in a campaign or finish marking an offer in a campaign. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get badge operation. Needs the Allegro permission allegro:api:campaigns.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -17815,6 +18238,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_badge_operation",
+    "check_title": "Get badge operation"
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -17891,6 +18319,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -17963,6 +18396,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -18041,6 +18479,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": true,
@@ -18126,6 +18569,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": true,
@@ -18221,6 +18669,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -18301,6 +18754,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -18378,6 +18836,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -18454,6 +18917,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -18537,6 +19005,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -18621,6 +19094,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -18698,6 +19176,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -18784,6 +19267,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -18849,6 +19337,11 @@
    "method": "PUT",
    "path": "/fulfillment/tax-id",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -18928,6 +19421,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -19002,6 +19500,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -19076,6 +19579,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -19147,6 +19655,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -19217,6 +19730,11 @@
    "method": "POST",
    "path": "/sale/images",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [
     {
      "description": "Sets the uploaded image to be marked as \"AI\". For a JSON request body (`application/vnd.allegro.public.v1+json`), this flag can also be provided in the request body. If both the query parameter and the request body are provided, their values must not conflict, otherwise a `400` response is returned.",
@@ -19301,6 +19819,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "403": true,
@@ -19376,6 +19899,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -19447,6 +19975,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "400": false,
@@ -19489,7 +20022,7 @@
     "required": true
    },
    "deprecated": false,
-   "description": "Use this resource to create a command for withdrawing an offer from specific campaign. Offer will be withdrawn from the AlleDiscount campaign only if command is processed successfully. Needs the Allegro permission allegro:api:campaigns.",
+   "description": "Use this resource to create a command for withdrawing an offer from specific campaign. Offer will be withdrawn from the AlleDiscount campaign only if command is processed successfully. Allegro registers the request and applies it afterwards: the step returns processing \"accepted\" and applied false. Get the outcome with Get AlleDiscount withdrawal status. Needs the Allegro permission allegro:api:campaigns.",
    "headers": [
     {
      "description": "Expected language of messages.",
@@ -19509,6 +20042,11 @@
    "method": "POST",
    "path": "/sale/alle-discount/withdraw-offer-commands",
    "path_params": [],
+   "processing": {
+    "accepted_always": true,
+    "check": "get_alle_discount_withdrawal_status",
+    "check_title": "Get AlleDiscount withdrawal status"
+   },
    "query": [],
    "refusals": {
     "400": true,
@@ -19579,6 +20117,11 @@
    "method": "POST",
    "path": "/messaging/messages",
    "path_params": [],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,
@@ -19654,6 +20197,11 @@
      }
     }
    ],
+   "processing": {
+    "accepted_always": false,
+    "check": null,
+    "check_title": null
+   },
    "query": [],
    "refusals": {
     "401": false,

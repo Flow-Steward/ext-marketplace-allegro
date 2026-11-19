@@ -497,7 +497,7 @@ class Command:
 
 def _price(value: Any, what: str) -> str:
     number = decimal(value, what)
-    if number <= 0 or number >= Decimal("1000000000"):
+    if number <= 0 or number >= Decimal(1000000000):
         raise invalid(f"{what} must be more than 0 and less than 1000000000")
     if number != number.quantize(Decimal("0.01")):
         raise invalid(f"{what} may have at most two decimal places")
@@ -621,9 +621,14 @@ def update_stock_and_prices(context: Context) -> dict[str, Any]:
             f"{again} of {len(done)} commands were already registered by an earlier run with the "
             "same batch key and rows; they were not applied again"
         )
+    # The commands are registered; Allegro applies them afterwards, and Get stock and
+    # price update results reads the outcome per offer.
     return {
         "commands": done,
         "offers_count": sum(c["offers_count"] for c in done),
+        "processing": "accepted",
+        "applied": False,
+        "check": {"operation_id": "get_stock_and_price_update_results", "location": None},
         "warnings": warnings,
     }
 

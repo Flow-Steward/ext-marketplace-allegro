@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from decimal import Decimal
 from typing import Any
 
-from . import budget, errors
+from . import budget, errors, numbers
 
 
 def mark_write(result: dict[str, Any]) -> dict[str, Any]:
@@ -113,9 +113,10 @@ def fit_write_result(result: dict[str, Any]) -> dict[str, Any]:
 
 
 def plain(value: Any) -> Any:
-    """Decimals as plain text, so no number goes through float on the way out."""
+    """Decimals as plain text, so no number goes through float on the way out; one outside
+    ``numbers``' bounds in its own exponential notation, never expanded."""
     if isinstance(value, Decimal):
-        return format(value, "f")
+        return numbers.plain(value)
     if isinstance(value, Mapping):
         return {k: plain(v) for k, v in value.items()}
     if isinstance(value, list):

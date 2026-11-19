@@ -129,3 +129,12 @@ artifact_policies:
     content_type: application/octet-stream
     max_size_bytes: 41943040
     retention_class: run_window
+- operation_id: get_fulfillment_stock
+  outputs:
+  - kind: artifact
+    value_type: artifact_handle
+    binding_key: allegro_file
+    filename: allegro-get-fulfillment-stock.csv
+    content_type: text/csv
+    max_size_bytes: 41943040
+    retention_class: run_window

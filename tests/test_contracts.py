@@ -113,12 +113,81 @@ def test_every_step_has_a_warnings_output_and_writes_their_effect_facts() -> Non
         if write:
             assert {"external_effect_status", "definitely_no_external_effect"} <= set(names_out)
             assert "timeout_unknown" in op["error_codes"]
-    assert len(effect_ids) == 115  # 114 documented changes + Update stock and prices
+    # 114 documented non-GET operations, less the 6 that change nothing, + Update stock and prices
+    assert len(effect_ids) == 109
     assert all(
         e["idempotency"] == "required" and e["test_mode_behavior"] == "suppress" for e in effects
     )
-    generated_writes = {k for k, v in generic.registry().items() if v["method"] != "GET"}
+    generated_writes = {k for k, v in generic.registry().items() if v["kind"] == "write"}
     assert generated_writes | {"update_stock_and_prices"} == effect_ids
+
+
+def test_the_non_get_reads_are_the_documented_list_and_match_the_manifest() -> None:
+    registry = generic.registry()
+    listed = set(build_contracts.READ_ONLY_NON_GET)
+    documented = {(o["method"], o["path"]) for o in FACTS["operations"]}
+    assert listed <= documented and all(method != "GET" for method, _ in listed)
+    non_get_reads = {(e["method"], e["path"]) for e in registry.values() if e["kind"] == "read"} - {
+        (m, p) for m, p in documented if m == "GET"
+    }
+    assert non_get_reads == listed
+    ids = {(e["method"], e["path"]): oid for oid, e in registry.items()}
+    reads = {ids[k] for k in listed}
+    assert {"download_shipment_labels", "download_shipment_protocol"} <= reads
+    # Already a read in 0.1.0: Allegro documents it as GET.
+    assert registry["download_advance_ship_notice_labels"]["method"] == "GET"
+    assert registry["download_advance_ship_notice_labels"]["kind"] == "read"
+    effects = {e["operation_id"] for e in load("extension.yaml")["external_effects"]}
+    kinds = {o["operation_id"]: o["operation_kind"] for o in operations()}
+    actions = {a["action_id"]: a for a in load("ui/actions/actions.yaml")["actions"]}
+    for oid in reads:
+        assert oid not in effects and oid not in catalog.EFFECT_OPERATION_IDS
+        assert kinds[oid] == "source" and actions[oid]["mutates_platform"] is False
+    # Each one carries the specification's own words for why it changes nothing.
+    facts = {(o["method"], o["path"]): o for o in FACTS["operations"]}
+    for where, quote in build_contracts.READ_ONLY_NON_GET.items():
+        summary, _, words = quote.partition(": ")
+        assert summary == facts[where]["summary"], where
+        first = words.split(" (")[0].rstrip(".")
+        assert first in facts[where]["description"], where
+
+
+def test_operations_with_a_json_and_another_answer_type_take_a_format() -> None:
+    registry = generic.registry()
+    with_formats = {oid: e["formats"] for oid, e in registry.items() if e.get("formats")}
+    assert with_formats == {
+        "get_fulfillment_stock": {
+            "json": "application/vnd.allegro.public.v1+json",
+            "csv": "text/csv",
+        }
+    }
+    for op in FACTS["operations"]:
+        has_accept = any(
+            p["in"] == "header" and p["name"].lower() == "accept" for p in op["parameters"]
+        )
+        types = build_contracts.success_types(op)
+        both = bool(build_contracts.choose_json(types)) and any(
+            t not in build_contracts.JSON_TYPES for t in types
+        )
+        oid = next(
+            k for k, e in registry.items() if (e["method"], e["path"]) == (op["method"], op["path"])
+        )
+        assert (both and not has_accept) == (oid in with_formats), oid
+    form = next(
+        f
+        for f in load("contracts/step_ui_manifest.yaml")["forms"]
+        if f["operation_id"] == "get_fulfillment_stock"
+    )
+    field = next(f for f in form["fields"] if f["name"] == "format")
+    assert field["required"] is False and [o["value"] for o in field["options"]] == ["json", "csv"]
+    assert "limit" in field["help_text"] and "offset" in field["help_text"]
+    policy = next(
+        p
+        for p in load("contracts/artifact_policies.yaml")["artifact_policies"]
+        if p["operation_id"] == "get_fulfillment_stock"
+    )
+    assert policy["outputs"][0]["content_type"] == "text/csv"
+    assert "get_fulfillment_stock" in catalog.FILE_OUTPUT_IDS
 
 
 def test_forms_inputs_and_runtime_agree() -> None:
@@ -261,11 +330,14 @@ def test_the_icon_is_a_square_png_and_branding_records_its_hash() -> None:
 
 def test_version_step_limit_and_changelog() -> None:
     manifest = load("extension.yaml")
-    assert manifest["version"] == "0.1.0"
+    assert manifest["version"] == "0.1.1"
     assert manifest["entrypoint"]["timeout_seconds"] == 600
     assert limits.STEP_TIMEOUT_SECONDS == 600
-    assert "## 0.1.0" in (BUNDLE / "CHANGELOG.md").read_text(encoding="utf-8")
-    assert "0.1.0" in json.dumps(load("ui/pages/changelog.yaml"))
+    changelog = (BUNDLE / "CHANGELOG.md").read_text(encoding="utf-8")
+    assert "## 0.1.1" in changelog and "## 0.1.0" in changelog
+    assert changelog.index("## 0.1.1") < changelog.index("## 0.1.0")
+    page = json.dumps(load("ui/pages/changelog.yaml"))
+    assert "0.1.1" in page and "0.1.0" in page
 
 
 def test_the_runtime_names_no_server_beyond_allegro() -> None:

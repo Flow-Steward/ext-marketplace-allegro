@@ -82,7 +82,7 @@ components:
 
     ### Create offer from product
 
-    Use this resource to create offer based on product. Note that requests may be limited. Needs the Allegro permission allegro:api:sale:offers:write.
+    Use this resource to create offer based on product. Note that requests may be limited. When Allegro answers HTTP 202 it has accepted the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Check offer processing status. Needs the Allegro permission allegro:api:sale:offers:write.
 
     Action id `create_offer_from_product` · changes data in Allegro · Allegro: `POST /sale/product-offers`
 
@@ -98,7 +98,7 @@ components:
 
     ### Change Buy Now price of offer
 
-    Use this resource to change the Buy Now price in a single offer. Needs the Allegro permission allegro:api:sale:offers:write.
+    Use this resource to change the Buy Now price in a single offer. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome from Allegro afterwards. Needs the Allegro permission allegro:api:sale:offers:write.
 
     Action id `change_buy_now_price_of_offer` · changes data in Allegro · Allegro: `PUT /offers/{offerId}/change-price-commands/{commandId}`
 
@@ -106,7 +106,7 @@ components:
 
     ### Publish or end offers
 
-    Use this resource to modify multiple offers publication at once. This resource is rate limited to 250 000 offer changes per hour or 9000 offer changes per minute. Needs the Allegro permission allegro:api:sale:offers:write.
+    Use this resource to modify multiple offers publication at once. This resource is rate limited to 250 000 offer changes per hour or 9000 offer changes per minute. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get publication command summary. Needs the Allegro permission allegro:api:sale:offers:write.
 
     Action id `publish_or_end_offers` · changes data in Allegro · Allegro: `PUT /sale/offer-publication-commands/{commandId}`
 
@@ -114,7 +114,7 @@ components:
 
     ### Change promotion packages of many offers
 
-    Use this resource to modify promotion packages on multiple offers at once. Needs the Allegro permission allegro:api:sale:offers:write.
+    Use this resource to modify promotion packages on multiple offers at once. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get promotion package command summary. Needs the Allegro permission allegro:api:sale:offers:write.
 
     Action id `change_promotion_packages_of_many_offers` · changes data in Allegro · Allegro: `PUT /sale/offers/promo-options-commands/{commandId}`
 
@@ -122,7 +122,7 @@ components:
 
     ### Edit offer
 
-    Use this resource to edit an offer. This resource allows you to edit each field independently, so you can update a single field, such as the price or quantity, several fields, or all supported offer fields in a single request. In general, fields omitted from the request remain unchanged. The request follows RFC 7396: arrays are replaced as a whole, and setting a field to null removes it. The specification names no Allegro permission for it.
+    Use this resource to edit an offer. This resource allows you to edit each field independently, so you can update a single field, such as the price or quantity, several fields, or all supported offer fields in a single request. In general, fields omitted from the request remain unchanged. The request follows RFC 7396: arrays are replaced as a whole, and setting a field to null removes it. When Allegro answers HTTP 202 it has accepted the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Check offer processing status. The specification names no Allegro permission for it.
 
     Action id `edit_offer` · changes data in Allegro · Allegro: `PATCH /sale/product-offers/{offerId}`
 
@@ -264,7 +264,7 @@ components:
 
     ### Change prices and stock of many offers (beta)
 
-    Bulk price and stock modification. Contrary to standard batch price or stock modification, it lets you modify both price and stock modification across multiple offers, or within the same offer but in a separate modification unit. Change price and stock of offers. This resource is rate limited to 150 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Beta in Allegro: it may still change. Needs the Allegro permission allegro:api:sale:offers:write.
+    Bulk price and stock modification. Contrary to standard batch price or stock modification, it lets you modify both price and stock modification across multiple offers, or within the same offer but in a separate modification unit. Change price and stock of offers. This resource is rate limited to 150 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Beta in Allegro: it may still change. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get price and stock command summary (beta). Needs the Allegro permission allegro:api:sale:offers:write.
 
     Action id `change_prices_and_stock_of_many_offers_beta` · changes data in Allegro · Allegro: `POST /sale/offer-bulk-modification-commands`
 
@@ -272,7 +272,7 @@ components:
 
     ### Change automatic pricing of many offers
 
-    Use this resource to modify the automatic pricing rules of multiple offers at the same time. This resource is rate limited to 150 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Needs the Allegro permission allegro:api:sale:offers:write.
+    Use this resource to modify the automatic pricing rules of multiple offers at the same time. This resource is rate limited to 150 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get automatic pricing command summary. Needs the Allegro permission allegro:api:sale:offers:write.
 
     Action id `change_automatic_pricing_of_many_offers` · changes data in Allegro · Allegro: `POST /sale/offer-price-automation-commands`
 
@@ -280,7 +280,7 @@ components:
 
     ### Modify many offers
 
-    Use this resource to modify multiple offers at once. This resource is rate limited to 250 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Needs the Allegro permission allegro:api:sale:offers:write.
+    Use this resource to modify multiple offers at once. This resource is rate limited to 250 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get offer modification command summary. Needs the Allegro permission allegro:api:sale:offers:write.
 
     Action id `modify_many_offers` · changes data in Allegro · Allegro: `PUT /sale/offer-modification-commands/{commandId}`
 
@@ -288,7 +288,7 @@ components:
 
     ### Change price of many offers
 
-    Change price of offers. This resource is rate limited to 150 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Needs the Allegro permission allegro:api:sale:offers:write.
+    Change price of offers. This resource is rate limited to 150 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get price change command summary. Needs the Allegro permission allegro:api:sale:offers:write.
 
     Action id `change_price_of_many_offers` · changes data in Allegro · Allegro: `PUT /sale/offer-price-change-commands/{commandId}`
 
@@ -296,7 +296,7 @@ components:
 
     ### Change stock of many offers
 
-    Change quantity of multiple offers. This resource is rate limited to 250 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Needs the Allegro permission allegro:api:sale:offers:write.
+    Change quantity of multiple offers. This resource is rate limited to 250 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the application. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get stock change command summary. Needs the Allegro permission allegro:api:sale:offers:write.
 
     Action id `change_stock_of_many_offers` · changes data in Allegro · Allegro: `PUT /sale/offer-quantity-change-commands/{commandId}`
 

@@ -8582,6 +8582,17 @@ forms:
       value: cs-CZ
     - label: hu-HU
       value: hu-HU
+  - name: format
+    label: Format
+    widget_type: select
+    required: false
+    help_text: 'json (default): Allegro''s answer in data. csv: the answer as a workflow file in file.
+      offset, limit, sort, product_id do not apply with csv (Allegro ignores them for that format).'
+    options:
+    - label: json
+      value: json
+    - label: csv
+      value: csv
 - operation_id: get_fulfillment_products
   title: Get fulfillment products
   fields:

@@ -4,7 +4,7 @@ lifecycle:
   data_migrations: []
 extension_id: flowsteward.allegro
 kind: tool_provider
-version: 0.1.0
+version: 0.1.1
 release_stage: active
 billing_mode: free
 display_name: Allegro
@@ -200,11 +200,6 @@ external_effects:
   channel: allegro_api
   idempotency: required
   test_mode_behavior: suppress
-- operation_id: parse_product_ingredients
-  effect_kind: allegro_parse_product_ingredients
-  channel: allegro_api
-  idempotency: required
-  test_mode_behavior: suppress
 - operation_id: create_size_table
   effect_kind: allegro_create_size_table
   channel: allegro_api
@@ -240,11 +235,6 @@ external_effects:
   channel: allegro_api
   idempotency: required
   test_mode_behavior: suppress
-- operation_id: calculate_offer_fee_and_commission
-  effect_kind: allegro_calculate_offer_fee_and_commission
-  channel: allegro_api
-  idempotency: required
-  test_mode_behavior: suppress
 - operation_id: create_automatic_pricing_rule
   effect_kind: allegro_create_automatic_pricing_rule
   channel: allegro_api
@@ -267,11 +257,6 @@ external_effects:
   test_mode_behavior: suppress
 - operation_id: exclude_offers_from_allegro_prices
   effect_kind: allegro_exclude_offers_from_allegro_prices
-  channel: allegro_api
-  idempotency: required
-  test_mode_behavior: suppress
-- operation_id: query_allegro_prices_status_of_offers
-  effect_kind: allegro_query_allegro_prices_status_of_offers
   channel: allegro_api
   idempotency: required
   test_mode_behavior: suppress
@@ -472,21 +457,6 @@ external_effects:
   test_mode_behavior: suppress
 - operation_id: cancel_shipment
   effect_kind: allegro_cancel_shipment
-  channel: allegro_api
-  idempotency: required
-  test_mode_behavior: suppress
-- operation_id: download_shipment_labels
-  effect_kind: allegro_download_shipment_labels
-  channel: allegro_api
-  idempotency: required
-  test_mode_behavior: suppress
-- operation_id: download_shipment_protocol
-  effect_kind: allegro_download_shipment_protocol
-  channel: allegro_api
-  idempotency: required
-  test_mode_behavior: suppress
-- operation_id: get_pickup_proposals
-  effect_kind: allegro_get_pickup_proposals
   channel: allegro_api
   idempotency: required
   test_mode_behavior: suppress

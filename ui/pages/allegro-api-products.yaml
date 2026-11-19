@@ -171,7 +171,7 @@ components:
 
     Use this resource to parse raw, free-text ingredients declarations into structured ingredient lists for one or more products. Every submitted product text is parsed independently. The response contains parsed items together with errors and warnings detected for each product. Needs the Allegro permission allegro:api:sale:offers:write.
 
-    Action id `parse_product_ingredients` · changes data in Allegro · Allegro: `POST /ingredients/parse`
+    Action id `parse_product_ingredients` · reads only · Allegro: `POST /ingredients/parse`
 
     Inputs: `accept_language`, `body` (required).
 - component_id: steps_size_tables

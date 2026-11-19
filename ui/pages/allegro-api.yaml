@@ -13,6 +13,7 @@ components:
     - **Permissions.** Each step names the Allegro permission it needs. Your Allegro application must have it, or Allegro refuses the step and nothing changes.
     - **Results.** A generated step returns `status`, `data` (Allegro's JSON) or `file` (a workflow file for PDFs, labels and attachments), `location`, `etag` and `warnings`.
     - **Request bodies** are given as JSON in `body`, exactly as Allegro documents them; amounts as text such as "49.99".
+    - **Accepted or completed.** Every step that changes data returns `processing`: `completed` when Allegro answered that the change is made, `accepted` when Allegro registered a command or accepted the request (HTTP 202) and applies it afterwards. With `accepted`, `applied` is false and `check` names the step that reads the outcome and the address Allegro returned for it.
     - **Changes are sent once.** A step that changes data is never retried automatically; when its outcome is unclear it says so, and you check Allegro before running it again. Test runs never send changes.
     - **Rate limit.** When Allegro answers that a limit is reached (HTTP 429) the step stops, says how long Allegro asks to wait, and nothing is changed.
 
@@ -50,13 +51,13 @@ components:
 
     ### Update stock and prices
 
-    Sets the stock and the Buy Now price of many offers with Allegro's batch commands: offers with the same new stock or the same new price go into one command of up to 1000 offers. Each command ID is derived from batch_key and the command's content, so running the step again with the same rows and batch key never registers a change twice: Allegro answers that the command already exists. Allegro applies the commands afterwards; read the outcome per offer with Get stock and price update results. Stock must be at least 1 and a price is an exact decimal with at most two places. Needs allegro:api:sale:offers:write.
+    Sets the stock and the Buy Now price of many offers with Allegro's batch commands: offers with the same new stock or the same new price go into one command of up to 1000 offers. Each command ID is derived from batch_key and the command's content, so running the step again with the same rows and batch key never registers a change twice: Allegro answers that the command already exists. The step confirms that Allegro registered the commands (processing accepted, applied false); Allegro applies them afterwards, and Get stock and price update results reads the outcome per offer. Stock must be at least 1 and a price is an exact decimal with at most two places. Needs allegro:api:sale:offers:write.
 
     Action id `update_stock_and_prices` · changes data in Allegro · Allegro: `PUT /sale/offer-quantity-change-commands/{commandId}`, `PUT /sale/offer-price-change-commands/{commandId}`
 
     Inputs: `rows` (required), `batch_key` (required).
 
-    Results: `commands`, `offers_count`, `warnings`.
+    Results: `commands`, `offers_count`, `processing`, `applied`, `check`, `warnings`.
 
     ### Get stock and price update results
 

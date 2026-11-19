@@ -217,7 +217,7 @@ components:
 
     ### Submit advance ship notice
 
-    Use this resource to submit the Advance Ship Notice. After this operation, updates of the Advance Ship Notice are limited to selected properties only. See PUT /fulfillment/advance-ship-notices/{id}/submitted. Needs the Allegro permission allegro:api:fulfillment:write.
+    Use this resource to submit the Advance Ship Notice. After this operation, updates of the Advance Ship Notice are limited to selected properties only. See PUT /fulfillment/advance-ship-notices/{id}/submitted. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get advance ship notice submission status. Needs the Allegro permission allegro:api:fulfillment:write.
 
     Action id `submit_advance_ship_notice` · changes data in Allegro · Allegro: `PUT /fulfillment/submit-commands/{command-id}`
 
@@ -244,11 +244,11 @@ components:
   body: |
     ### Get fulfillment stock
 
-    Use this resource to get a list of the products belonging to the seller, which are in Allegro Warehouse. Needs the Allegro permission allegro:api:fulfillment:read.
+    Use this resource to get a list of the products belonging to the seller, which are in Allegro Warehouse. With format csv the answer is saved as a workflow file. Needs the Allegro permission allegro:api:fulfillment:read.
 
     Action id `get_fulfillment_stock` · reads only · Allegro: `GET /fulfillment/stock`
 
-    Inputs: `offset`, `limit`, `phrase`, `sort`, `product_id`, `product_availability`, `product_status`, `asn_status`, `out_of_stock_in_from`, `out_of_stock_in_to`, `accept_language`.
+    Inputs: `offset`, `limit`, `phrase`, `sort`, `product_id`, `product_availability`, `product_status`, `asn_status`, `out_of_stock_in_from`, `out_of_stock_in_to`, `accept_language`, `format`.
 - component_id: steps_fulfillment_products
   type: markdown
   title: Fulfillment Products

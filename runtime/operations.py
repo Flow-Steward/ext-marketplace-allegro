@@ -200,6 +200,8 @@ def neutral_result(operation_id: str, operation_input: Mapping[str, Any]) -> dic
             result.update(file=None, content_type=None, size_bytes=None)
         else:
             result["data"] = None
+    # Nothing was sent, so nothing was accepted or applied.
+    result.update(processing=None, applied=False, check=None)
     result["warnings"] = ["Test run: the inputs were checked and nothing was sent to Allegro"]
     # Nothing was sent. "failed" + definitely-no-effect is the pair Core accepts
     # for "no external effect happened"; an extension may not report "suppressed".

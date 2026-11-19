@@ -66,7 +66,7 @@ components:
 
     ### Create shipment
 
-    Use this resource to create shipment for delivery. Please check also new resource '/shipment-management/delivery-proposals/{orderId}' to get prefilled request body for this resource. Needs the Allegro permission allegro:api:shipments:write.
+    Use this resource to create shipment for delivery. Please check also new resource '/shipment-management/delivery-proposals/{orderId}' to get prefilled request body for this resource. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get shipment creation status. Needs the Allegro permission allegro:api:shipments:write.
 
     Action id `create_shipment` · changes data in Allegro · Allegro: `POST /shipment-management/shipments/create-commands`
 
@@ -74,7 +74,7 @@ components:
 
     ### Cancel shipment
 
-    Use this resource to cancel parcel. Needs the Allegro permission allegro:api:shipments:write.
+    Use this resource to cancel parcel. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get shipment cancellation status. Needs the Allegro permission allegro:api:shipments:write.
 
     Action id `cancel_shipment` · changes data in Allegro · Allegro: `POST /shipment-management/shipments/cancel-commands`
 
@@ -84,7 +84,7 @@ components:
 
     Use this resource to get label for created shipment. Returned content type depends on created shipment. The answer is saved as a workflow file. Needs the Allegro permission allegro:api:shipments:read.
 
-    Action id `download_shipment_labels` · changes data in Allegro · Allegro: `POST /shipment-management/label`
+    Action id `download_shipment_labels` · reads only · Allegro: `POST /shipment-management/label`
 
     Inputs: `accept_language`, `body` (required).
 
@@ -92,7 +92,7 @@ components:
 
     Protocol availability depends on Carrier. The answer is saved as a workflow file. Needs the Allegro permission allegro:api:shipments:read.
 
-    Action id `download_shipment_protocol` · changes data in Allegro · Allegro: `POST /shipment-management/protocol`
+    Action id `download_shipment_protocol` · reads only · Allegro: `POST /shipment-management/protocol`
 
     Inputs: `accept_language`, `body` (required).
 
@@ -100,13 +100,13 @@ components:
 
     Use this resource to get parcels pickup date proposals. Pickup takes place, when courier arrives to take parcels for shipment. Needs the Allegro permission allegro:api:shipments:write.
 
-    Action id `get_pickup_proposals` · changes data in Allegro · Allegro: `POST /shipment-management/pickup-proposals`
+    Action id `get_pickup_proposals` · reads only · Allegro: `POST /shipment-management/pickup-proposals`
 
     Inputs: `accept_language`, `body` (required).
 
     ### Request shipment pickup
 
-    Use this resource to request a pickup of shipments. Needs the Allegro permission allegro:api:shipments:write.
+    Use this resource to request a pickup of shipments. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get pickup request status. Needs the Allegro permission allegro:api:shipments:write.
 
     Action id `request_shipment_pickup` · changes data in Allegro · Allegro: `POST /shipment-management/pickups/create-commands`
 

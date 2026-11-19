@@ -15,6 +15,10 @@ Refusals carry an HTTP status and, by the specification, an ``ErrorsHolder``
 (``{"error", "error_description"}``). Only their texts reach the step's error,
 bounded and with the token removed.
 
+An answer with a 2xx status the operation does not document (``success`` in the
+registry) is not taken as success: for a read it is an invalid answer, for a write
+the change may or may not have been made (``timeout_unknown``).
+
 Outcome of a write: a refusal shows that nothing changed only when its status is one
 the operation documents (``refusals`` in the registry) and, when the documentation
 gives that status a body, the body has the documented error form; and for HTTP 429,
@@ -41,7 +45,7 @@ from urllib.request import Request
 
 from flowsteward_extension_sdk import PinnedPeerError, open_pinned_url, parse_retry_after
 
-from . import errors
+from . import errors, numbers
 from .connection import Connection
 from .errors import ExtensionError
 
@@ -274,6 +278,8 @@ class AllegroTransport:
             raise self.refusal(
                 status, raw[:MAX_ERROR_BODY_BYTES], call, mutating=mutating, headers=kept
             )
+        if str(status) not in call.success:
+            raise undocumented(status, call, mutating=mutating)
         kind = str(headers.get("Content-Type") or "") if hasattr(headers, "get") else ""
         return Answer(status, raw, kind.split(";")[0].strip().lower(), kept)
 
@@ -389,6 +395,24 @@ class AllegroTransport:
         )
 
 
+def undocumented(status: int, call: Call, *, mutating: bool) -> ExtensionError:
+    """A 2xx answer the operation does not document: not taken as success."""
+    documented = ", ".join(call.success) or "none"
+    message = (
+        f"Allegro answered {call.shown} with HTTP {status}, which the specification does not "
+        f"document for it (documented: {documented})"
+    )
+    if mutating:
+        return unknown(message + CHECK, errors.INVALID_RESPONSE, status)
+    return errors.no_effect(
+        errors.INVALID_RESPONSE,
+        message,
+        failure_class="provider",
+        retryable=False,
+        http_status=status,
+    )
+
+
 def unknown(message: str, code: str, status: int | None) -> ExtensionError:
     return ExtensionError(
         code,
@@ -413,20 +437,41 @@ def _kept_headers(headers: Any) -> dict[str, str]:
 
 
 def dumps_json(value: Any) -> str:
-    """JSON with ``Decimal`` written as an exact number (never through float)."""
+    """JSON with ``Decimal`` written as an exact number (never through float).
+
+    A Decimal outside ``numbers``' bounds is written as text in its own exponential
+    notation, never expanded."""
     marker = secrets.token_hex(8)
 
     def default(item: Any) -> str:
-        if isinstance(item, Decimal) and item.is_finite():
+        if isinstance(item, Decimal) and numbers.bounded(item):
             return f"@{marker}@{format(item, 'f')}@{marker}@"
+        if isinstance(item, Decimal):
+            return str(item)
         raise TypeError(f"{type(item).__name__} is not JSON")
 
     text = json.dumps(value, ensure_ascii=False, separators=(",", ":"), default=default)
     return re.sub(rf'"@{marker}@([-+0-9.]+)@{marker}@"', r"\1", text)
 
 
+def _answer_number(integer: bool) -> Callable[[str], Any]:
+    def read(text: str) -> Any:
+        number = numbers.read(text, integer=integer)
+        # Outside the bounds: kept as Allegro wrote it, as text, never expanded.
+        return text if number is None else number
+
+    return read
+
+
+_ANSWER_FLOAT = _answer_number(False)
+_ANSWER_INT = _answer_number(True)
+
+
 def parse_json(raw: bytes) -> Any:
-    """Any JSON value, numbers with a point read as Decimal; ValueError otherwise."""
+    """Any JSON value, numbers with a point read as Decimal; ValueError otherwise.
+
+    A number outside ``numbers``' bounds (and NaN or Infinity) is kept as the text
+    Allegro wrote, so reading it never expands it or fails on it."""
     try:
         text = raw.decode("utf-8-sig", "strict") if raw else ""
     except UnicodeDecodeError as exc:
@@ -434,7 +479,9 @@ def parse_json(raw: bytes) -> Any:
     if not text.strip():
         raise ValueError("empty")
     try:
-        return json.loads(text, parse_float=Decimal)
+        return json.loads(
+            text, parse_float=_ANSWER_FLOAT, parse_int=_ANSWER_INT, parse_constant=str
+        )
     except json.JSONDecodeError as exc:
         raise ValueError("bad JSON") from exc
 
@@ -525,5 +572,6 @@ __all__ = [
     "dumps_json",
     "parse_json",
     "read_bounded",
+    "undocumented",
     "unknown",
 ]

@@ -14,7 +14,13 @@ built from the pinned specification by tests/reference/build_contracts.py:
   top-level required fields are checked here and the rest by Allegro;
 - a file upload takes a workflow file (``file``) and the documented media type;
 - a JSON answer is ``data``; a binary answer (PDF, labels, attachments) is saved as a
-  workflow file and never put into the step output.
+  workflow file and never put into the step output; where Allegro documents the
+  answer both as JSON and in another type (CSV), the ``format`` input chooses, JSON by
+  default;
+- a write returns ``processing``: ``completed`` when Allegro answered that the change
+  is made, ``accepted`` when it answered HTTP 202 or the operation only registers a
+  command Allegro applies afterwards; then ``applied`` is false and ``check`` names the
+  step that reads the outcome and the ``Location`` Allegro returned.
 """
 
 from __future__ import annotations
@@ -68,6 +74,8 @@ def inputs_of(entry: Mapping[str, Any]) -> set[str]:
     names = {p["input"] for p in entry["path_params"] + entry["query"] + entry["headers"]}
     if entry["accept_choices"]:
         names.add("accept")
+    if entry.get("formats"):
+        names.add("format")
     body = entry["body"]
     if body:
         if body["json"]:
@@ -95,6 +103,8 @@ class Plan:
     content_type: str | None = None
     file_handle: str | None = None
     multipart: list[tuple[str, str]] = field(default_factory=list)
+    #: True when the answer is saved as a workflow file.
+    as_file: bool = False
 
 
 def prepare(operation_id: str, operation_input: Mapping[str, Any]) -> Plan:
@@ -143,6 +153,14 @@ def prepare(operation_id: str, operation_input: Mapping[str, Any]) -> Plan:
         if choice not in entry["accept_choices"]:
             raise invalid("accept must be one of: " + ", ".join(entry["accept_choices"]))
         plan.accept = str(choice)
+    formats = entry.get("formats")
+    if formats:
+        choice = given.get("format") or "json"
+        if choice not in formats:
+            raise invalid("format must be one of: " + ", ".join(formats))
+        plan.accept = formats[choice]
+        plan.as_file = choice != "json"
+    plan.as_file = plan.as_file or entry["answer"] == "file"
     _body(entry, given, plan)
     return plan
 
@@ -243,18 +261,21 @@ def to_call(context: Context, entry: Mapping[str, Any], plan: Plan) -> Call:
         content_type=content_type,
         refusals=entry["refusals"],
         success=tuple(entry["success"]),
-        limit=MAX_FILE_ANSWER_BYTES if entry["answer"] == "file" else MAX_ANSWER_BYTES,
+        limit=MAX_FILE_ANSWER_BYTES if plan.as_file else MAX_ANSWER_BYTES,
     )
 
 
 def answer_result(
-    context: Context, entry: Mapping[str, Any], answer: Answer, shown: str
+    context: Context, entry: Mapping[str, Any], answer: Answer, plan: Plan
 ) -> dict[str, Any]:
     """The outputs of an answer Allegro gave with a documented success status."""
+    shown = plan.shown
     write = entry["kind"] == "write"
     warnings: list[str] = []
     result: dict[str, Any] = {"status": answer.status}
-    if entry["answer"] == "file":
+    if entry.get("formats"):
+        result.update(data=None, file=None, content_type=None, size_bytes=None)
+    if plan.as_file:
         handle = None
         if not answer.empty:
             handle = files.save(
@@ -289,15 +310,25 @@ def answer_result(
                     "JSON; it is returned as text"
                 )
         result["data"] = data
-    if answer.status == 202:
-        warnings.append(
-            "Allegro accepted the request and is still processing it; check the result at "
-            "location (or with the matching status step) before relying on it"
-        )
     result["location"] = answer.headers.get("Location")
     result["etag"] = answer.headers.get("ETag")
+    if write:
+        result.update(processing_of(entry, answer.status, result["location"]))
     result["warnings"] = warnings
     return result
+
+
+def processing_of(entry: Mapping[str, Any], status: int, location: str | None) -> dict[str, Any]:
+    """What Allegro's answer to a write confirms: the change made (completed), or the
+    request accepted, to be applied by Allegro afterwards (accepted)."""
+    facts = entry["processing"]
+    if status == 202 or facts["accepted_always"]:
+        return {
+            "processing": "accepted",
+            "applied": False,
+            "check": {"operation_id": facts["check"], "location": location},
+        }
+    return {"processing": "completed", "applied": True, "check": None}
 
 
 def run(context: Context, operation_id: str) -> dict[str, Any]:
@@ -306,11 +337,11 @@ def run(context: Context, operation_id: str) -> dict[str, Any]:
     call = to_call(context, entry, plan)
     if entry["kind"] == "read":
         answer = context.transport.read(call)
-        result = answer_result(context, entry, answer, plan.shown)
+        result = answer_result(context, entry, answer, plan)
         budget.ensure_fits(result)
         return result
     answer = context.transport.write(call)
-    return answer_result(context, entry, answer, plan.shown)
+    return answer_result(context, entry, answer, plan)
 
 
-__all__ = ["Plan", "inputs_of", "prepare", "registry", "run", "spec"]
+__all__ = ["Plan", "inputs_of", "prepare", "processing_of", "registry", "run", "spec"]

@@ -20,7 +20,7 @@ components:
 
     Provides information about fee and commission for an offer. This resource is limited to 25 requests per second for a single user. Needs the Allegro permission allegro:api:sale:offers:read.
 
-    Action id `calculate_offer_fee_and_commission` · changes data in Allegro · Allegro: `POST /pricing/offer-fee-preview`
+    Action id `calculate_offer_fee_and_commission` · reads only · Allegro: `POST /pricing/offer-fee-preview`
 
     Inputs: `accept_language`, `body` (required).
 - component_id: steps_automatic_pricing
@@ -104,7 +104,7 @@ components:
 
     ### Submit offers to Allegro Prices
 
-    Use this resource to submit a command to add offers to the Allegro Prices program. Returns a command ID that can be used to track the processing status. Needs the Allegro permission allegro:api:campaigns.
+    Use this resource to submit a command to add offers to the Allegro Prices program. Returns a command ID that can be used to track the processing status. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get Allegro Prices submission status. Needs the Allegro permission allegro:api:campaigns.
 
     Action id `submit_offers_to_allegro_prices` · changes data in Allegro · Allegro: `POST /sale/allegro-prices/offers/submit-offer-commands`
 
@@ -112,7 +112,7 @@ components:
 
     ### Exclude offers from Allegro Prices
 
-    Use this resource to submit a command to exclude offers from the Allegro Prices program. Returns a command ID that can be used to track the processing status. Needs the Allegro permission allegro:api:campaigns.
+    Use this resource to submit a command to exclude offers from the Allegro Prices program. Returns a command ID that can be used to track the processing status. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get Allegro Prices exclusion status. Needs the Allegro permission allegro:api:campaigns.
 
     Action id `exclude_offers_from_allegro_prices` · changes data in Allegro · Allegro: `POST /sale/allegro-prices/offers/exclusion-commands`
 
@@ -122,7 +122,7 @@ components:
 
     Use this resource to retrieve a list of offers and their status in the Allegro Prices program with optional filtering and pagination. Allows filtering by offer IDs, marketplace, and scope (WITH_DECLARATION, DISCOUNTED, or EXCLUDED). Only offers in ACTIVATING, ACTIVE, or ENDED statuses are considered. Needs the Allegro permission allegro:api:campaigns.
 
-    Action id `query_allegro_prices_status_of_offers` · changes data in Allegro · Allegro: `POST /sale/allegro-prices/offers-queries`
+    Action id `query_allegro_prices_status_of_offers` · reads only · Allegro: `POST /sale/allegro-prices/offers-queries`
 
     Inputs: `accept_language`, `body` (required).
 
@@ -179,7 +179,7 @@ components:
 
     ### Submit offer to AlleDiscount
 
-    Use this resource to create a command for submitting an offer. Offer will be submitted to the AlleDiscount campaign only if command is processed successfully. Needs the Allegro permission allegro:api:campaigns.
+    Use this resource to create a command for submitting an offer. Offer will be submitted to the AlleDiscount campaign only if command is processed successfully. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get AlleDiscount submission status. Needs the Allegro permission allegro:api:campaigns.
 
     Action id `submit_offer_to_alle_discount` · changes data in Allegro · Allegro: `POST /sale/alle-discount/submit-offer-commands`
 
@@ -187,7 +187,7 @@ components:
 
     ### Withdraw offer from AlleDiscount
 
-    Use this resource to create a command for withdrawing an offer from specific campaign. Offer will be withdrawn from the AlleDiscount campaign only if command is processed successfully. Needs the Allegro permission allegro:api:campaigns.
+    Use this resource to create a command for withdrawing an offer from specific campaign. Offer will be withdrawn from the AlleDiscount campaign only if command is processed successfully. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get AlleDiscount withdrawal status. Needs the Allegro permission allegro:api:campaigns.
 
     Action id `withdraw_offer_from_alle_discount` · changes data in Allegro · Allegro: `POST /sale/alle-discount/withdraw-offer-commands`
 
@@ -238,7 +238,7 @@ components:
 
     ### Apply for badge
 
-    This resource allows you to apply for a badge. Most badges involve additional fee charged. Your badge application will be verified and you will be notified about the verification status via e-mail. You can use *Location* provided in header of the response to track your application status. Application will be removed after 30 days when status of the application was changed form PROCESSED or DECLINED. Needs the Allegro permission allegro:api:campaigns.
+    This resource allows you to apply for a badge. Most badges involve additional fee charged. Your badge application will be verified and you will be notified about the verification status via e-mail. You can use *Location* provided in header of the response to track your application status. Application will be removed after 30 days when status of the application was changed form PROCESSED or DECLINED. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get badge application. Needs the Allegro permission allegro:api:campaigns.
 
     Action id `apply_for_badge` · changes data in Allegro · Allegro: `POST /sale/badges`
 
@@ -246,7 +246,7 @@ components:
 
     ### Update offer badge
 
-    This resource allows you to update a campaign badge for the given offer. You can use *Location* provided in header of the response to track your update status. Update offer price in a campaign or finish marking an offer in a campaign. Needs the Allegro permission allegro:api:campaigns.
+    This resource allows you to update a campaign badge for the given offer. You can use *Location* provided in header of the response to track your update status. Update offer price in a campaign or finish marking an offer in a campaign. Allegro registers the request and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get badge operation. Needs the Allegro permission allegro:api:campaigns.
 
     Action id `update_offer_badge` · changes data in Allegro · Allegro: `PATCH /sale/badges/offers/{offerId}/campaigns/{campaignId}`
 

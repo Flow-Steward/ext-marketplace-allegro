@@ -227,7 +227,7 @@ class SlowBody:
     def __enter__(self) -> SlowBody:
         return self
 
-    def __exit__(self, *exc: Any) -> None:
+    def __exit__(self, *exc: object) -> None:
         return None
 
 
@@ -331,3 +331,85 @@ def test_an_internal_error_after_a_write_was_sent_is_unknown(
     result = run(EDIT, EDIT_INPUT, FakeAllegro(ok({"id": "1"})))
     assert result["external_effect_status"] == "timeout_unknown"
     assert result["definitely_no_external_effect"] is False
+
+
+# -- success statuses the operation does not document -----------------------------------
+
+
+def test_a_write_answered_with_an_undocumented_2xx_is_unknown() -> None:
+    from test_generic import REGISTRY, minimal_input
+
+    entry = REGISTRY["change_price_of_many_offers"]  # documents 201 only
+    fake = FakeAllegro(raw(204, b""))
+    result = run("change_price_of_many_offers", minimal_input(entry), fake)
+    assert result["ok"] is False
+    assert result["error_code"] == "invalid_response"
+    assert result["definitely_no_external_effect"] is False
+    assert result["external_effect_status"] == "timeout_unknown"
+    assert "HTTP 204" in result["error"] and "documented: 201" in result["error"]
+    assert len(fake.calls) == 1
+
+
+def test_a_read_answered_with_an_undocumented_2xx_is_an_invalid_answer() -> None:
+    fake = FakeAllegro(ok({"id": "1"}, 201))  # GET /me documents 200
+    result = run("get_my_account", {}, fake)
+    assert result["error_code"] == "invalid_response"
+    assert result["definitely_no_external_effect"] is True
+    assert "HTTP 201" in result["error"] and "documented: 200" in result["error"]
+
+
+def test_documented_success_statuses_still_pass() -> None:
+    assert run("get_my_account", {}, FakeAllegro(ok({"id": "1"})))["ok"] is True
+
+
+# -- numbers outside the bounds ------------------------------------------------------------
+
+
+def test_huge_numbers_in_an_answer_after_a_write_keep_the_structured_result() -> None:
+    body = (
+        b'{"id":"1","price":{"amount":12.50},"big":1e1000000,"small":1e-1000000,"n":'
+        + b"9" * 5000
+        + b"}"
+    )
+    fake = FakeAllegro(raw(200, body))
+    result = run("edit_offer", EDIT_INPUT, fake)
+    assert result["ok"] is True, result
+    assert result["external_effect_status"] == "succeeded"
+    data = result["result"]["data"]
+    assert isinstance(data, dict) and data["id"] == "1"
+    assert data["price"] == {"amount": "12.50"}
+    assert data["big"] == "1e1000000" and data["small"] == "1e-1000000"
+    assert data["n"] == "9" * 5000
+    # Nothing was written out in full.
+    assert len(text_of(result)) < 20_000
+
+
+def test_a_huge_number_in_a_read_answer_is_text_not_expanded() -> None:
+    fake = FakeAllegro(raw(200, b'{"id":"1","x":-2.5E+99999}'))
+    result = run("get_my_account", {}, fake)
+    assert result["ok"] is True and result["result"]["data"]["x"] == "-2.5E+99999"
+
+
+@pytest.mark.parametrize(
+    ("text", "inside"),
+    [
+        ("1" * 40, True),
+        ("1" * 41, False),
+        ("1e30", True),
+        ("1e31", False),
+        ("1e-30", True),
+        ("1e-31", False),
+        ("12345.678", True),
+    ],
+)
+def test_the_number_bounds_come_from_digits_and_exponent(text: str, inside: bool) -> None:
+    from runtime import numbers
+
+    assert numbers.bounded(Decimal(text)) is inside
+    integer = text.isdigit()
+    assert (numbers.read(text, integer=integer) is not None) is inside
+
+
+def test_a_decimal_outside_the_bounds_is_never_expanded_when_written() -> None:
+    assert dumps_json({"x": Decimal("1e1000000")}) == '{"x":"1E+1000000"}'
+    assert dumps_json({"x": Decimal("49.90")}) == '{"x":49.90}'

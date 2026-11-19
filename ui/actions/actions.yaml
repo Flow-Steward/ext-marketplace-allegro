@@ -96,9 +96,10 @@ actions:
   description: 'Sets the stock and the Buy Now price of many offers with Allegro''s batch commands: offers
     with the same new stock or the same new price go into one command of up to 1000 offers. Each command
     ID is derived from batch_key and the command''s content, so running the step again with the same rows
-    and batch key never registers a change twice: Allegro answers that the command already exists. Allegro
-    applies the commands afterwards; read the outcome per offer with Get stock and price update results.
-    Stock must be at least 1 and a price is an exact decimal with at most two places. Needs allegro:api:sale:offers:write.'
+    and batch key never registers a change twice: Allegro answers that the command already exists. The
+    step confirms that Allegro registered the commands (processing accepted, applied false); Allegro applies
+    them afterwards, and Get stock and price update results reads the outcome per offer. Stock must be
+    at least 1 and a price is an exact decimal with at most two places. Needs allegro:api:sale:offers:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -119,6 +120,9 @@ actions:
   result_fields:
   - commands
   - offers_count
+  - processing
+  - applied
+  - check
   - warnings
   - external_effect_status
   - definitely_no_external_effect
@@ -530,8 +534,10 @@ actions:
   error_codes: *id001
 - action_id: create_offer_from_product
   title: Create offer from product
-  description: Use this resource to create offer based on product. Note that requests may be limited.
-    Needs the Allegro permission allegro:api:sale:offers:write.
+  description: 'Use this resource to create offer based on product. Note that requests may be limited.
+    When Allegro answers HTTP 202 it has accepted the request and applies it afterwards: the step returns
+    processing "accepted" and applied false. Get the outcome with Check offer processing status. Needs
+    the Allegro permission allegro:api:sale:offers:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -552,6 +558,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -584,6 +593,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -592,8 +604,9 @@ actions:
   error_codes: *id002
 - action_id: change_buy_now_price_of_offer
   title: Change Buy Now price of offer
-  description: Use this resource to change the Buy Now price in a single offer. Needs the Allegro permission
-    allegro:api:sale:offers:write.
+  description: 'Use this resource to change the Buy Now price in a single offer. Allegro registers the
+    request and applies it afterwards: the step returns processing "accepted" and applied false. Get the
+    outcome from Allegro afterwards. Needs the Allegro permission allegro:api:sale:offers:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -620,6 +633,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -628,9 +644,10 @@ actions:
   error_codes: *id002
 - action_id: publish_or_end_offers
   title: Publish or end offers
-  description: Use this resource to modify multiple offers publication at once. This resource is rate
-    limited to 250 000 offer changes per hour or 9000 offer changes per minute. Needs the Allegro permission
-    allegro:api:sale:offers:write.
+  description: 'Use this resource to modify multiple offers publication at once. This resource is rate
+    limited to 250 000 offer changes per hour or 9000 offer changes per minute. Allegro registers the
+    request and applies it afterwards: the step returns processing "accepted" and applied false. Get the
+    outcome with Get publication command summary. Needs the Allegro permission allegro:api:sale:offers:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -654,6 +671,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -662,8 +682,9 @@ actions:
   error_codes: *id002
 - action_id: change_promotion_packages_of_many_offers
   title: Change promotion packages of many offers
-  description: Use this resource to modify promotion packages on multiple offers at once. Needs the Allegro
-    permission allegro:api:sale:offers:write.
+  description: 'Use this resource to modify promotion packages on multiple offers at once. Allegro registers
+    the request and applies it afterwards: the step returns processing "accepted" and applied false. Get
+    the outcome with Get promotion package command summary. Needs the Allegro permission allegro:api:sale:offers:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -687,6 +708,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -699,7 +723,9 @@ actions:
     so you can update a single field, such as the price or quantity, several fields, or all supported
     offer fields in a single request. In general, fields omitted from the request remain unchanged. The
     request follows RFC 7396: arrays are replaced as a whole, and setting a field to null removes it.
-    The specification names no Allegro permission for it.'
+    When Allegro answers HTTP 202 it has accepted the request and applies it afterwards: the step returns
+    processing "accepted" and applied false. Get the outcome with Check offer processing status. The specification
+    names no Allegro permission for it.'
   required_scopes:
   - extension:invoke
   handler:
@@ -723,6 +749,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -752,6 +781,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -1288,7 +1320,9 @@ actions:
     it lets you modify both price and stock modification across multiple offers, or within the same offer
     but in a separate modification unit. Change price and stock of offers. This resource is rate limited
     to 150 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user
-    of the application. Beta in Allegro: it may still change. Needs the Allegro permission allegro:api:sale:offers:write.'
+    of the application. Beta in Allegro: it may still change. Allegro registers the request and applies
+    it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get
+    price and stock command summary (beta). Needs the Allegro permission allegro:api:sale:offers:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -1309,6 +1343,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -1317,9 +1354,11 @@ actions:
   error_codes: *id002
 - action_id: change_automatic_pricing_of_many_offers
   title: Change automatic pricing of many offers
-  description: Use this resource to modify the automatic pricing rules of multiple offers at the same
+  description: 'Use this resource to modify the automatic pricing rules of multiple offers at the same
     time. This resource is rate limited to 150 000 offer changes per hour or 9000 offer changes per minute
-    - limit applies to a single user of the application. Needs the Allegro permission allegro:api:sale:offers:write.
+    - limit applies to a single user of the application. Allegro registers the request and applies it
+    afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get automatic
+    pricing command summary. Needs the Allegro permission allegro:api:sale:offers:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -1340,6 +1379,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -1348,9 +1390,11 @@ actions:
   error_codes: *id002
 - action_id: modify_many_offers
   title: Modify many offers
-  description: Use this resource to modify multiple offers at once. This resource is rate limited to 250
-    000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of the
-    application. Needs the Allegro permission allegro:api:sale:offers:write.
+  description: 'Use this resource to modify multiple offers at once. This resource is rate limited to
+    250 000 offer changes per hour or 9000 offer changes per minute - limit applies to a single user of
+    the application. Allegro registers the request and applies it afterwards: the step returns processing
+    "accepted" and applied false. Get the outcome with Get offer modification command summary. Needs the
+    Allegro permission allegro:api:sale:offers:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -1374,6 +1418,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -1382,9 +1429,10 @@ actions:
   error_codes: *id002
 - action_id: change_price_of_many_offers
   title: Change price of many offers
-  description: Change price of offers. This resource is rate limited to 150 000 offer changes per hour
-    or 9000 offer changes per minute - limit applies to a single user of the application. Needs the Allegro
-    permission allegro:api:sale:offers:write.
+  description: 'Change price of offers. This resource is rate limited to 150 000 offer changes per hour
+    or 9000 offer changes per minute - limit applies to a single user of the application. Allegro registers
+    the request and applies it afterwards: the step returns processing "accepted" and applied false. Get
+    the outcome with Get price change command summary. Needs the Allegro permission allegro:api:sale:offers:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -1408,6 +1456,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -1416,9 +1467,10 @@ actions:
   error_codes: *id002
 - action_id: change_stock_of_many_offers
   title: Change stock of many offers
-  description: Change quantity of multiple offers. This resource is rate limited to 250 000 offer changes
-    per hour or 9000 offer changes per minute - limit applies to a single user of the application. Needs
-    the Allegro permission allegro:api:sale:offers:write.
+  description: 'Change quantity of multiple offers. This resource is rate limited to 250 000 offer changes
+    per hour or 9000 offer changes per minute - limit applies to a single user of the application. Allegro
+    registers the request and applies it afterwards: the step returns processing "accepted" and applied
+    false. Get the outcome with Get stock change command summary. Needs the Allegro permission allegro:api:sale:offers:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -1442,6 +1494,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -1506,6 +1561,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -1544,6 +1602,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -1631,6 +1692,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -1663,6 +1727,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -1696,6 +1763,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -1725,6 +1795,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -1820,6 +1893,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -1852,6 +1928,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -1891,6 +1970,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -2068,6 +2150,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -2127,6 +2212,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -2291,6 +2379,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -2324,6 +2415,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -2729,8 +2823,7 @@ actions:
   - extension:invoke
   handler:
     mode: extension
-  command_type: invoke_extension_action
-  mutates_platform: true
+  mutates_platform: false
   workflow_visible: true
   parameters:
   - name: connection_ref
@@ -2748,9 +2841,7 @@ actions:
   - location
   - etag
   - warnings
-  - external_effect_status
-  - definitely_no_external_effect
-  error_codes: *id002
+  error_codes: *id001
 - action_id: get_size_table
   title: Get size table
   description: Use this resource to get selected size table. Needs the Allegro permission allegro:api:sale:settings:read.
@@ -2847,6 +2938,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -2879,6 +2973,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -2966,6 +3063,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -2999,6 +3099,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -3086,6 +3189,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -3119,6 +3225,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -3150,6 +3259,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -3191,8 +3303,7 @@ actions:
   - extension:invoke
   handler:
     mode: extension
-  command_type: invoke_extension_action
-  mutates_platform: true
+  mutates_platform: false
   workflow_visible: true
   parameters:
   - name: connection_ref
@@ -3210,9 +3321,7 @@ actions:
   - location
   - etag
   - warnings
-  - external_effect_status
-  - definitely_no_external_effect
-  error_codes: *id002
+  error_codes: *id001
 - action_id: get_automatic_pricing_rules
   title: Get automatic pricing rules
   description: Use this resource to get automatic pricing rules. Rules with property default set to true
@@ -3317,6 +3426,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -3350,6 +3462,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -3380,6 +3495,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -3466,8 +3584,10 @@ actions:
   error_codes: *id001
 - action_id: submit_offers_to_allegro_prices
   title: Submit offers to Allegro Prices
-  description: Use this resource to submit a command to add offers to the Allegro Prices program. Returns
-    a command ID that can be used to track the processing status. Needs the Allegro permission allegro:api:campaigns.
+  description: 'Use this resource to submit a command to add offers to the Allegro Prices program. Returns
+    a command ID that can be used to track the processing status. Allegro registers the request and applies
+    it afterwards: the step returns processing "accepted" and applied false. Get the outcome with Get
+    Allegro Prices submission status. Needs the Allegro permission allegro:api:campaigns.'
   required_scopes:
   - extension:invoke
   handler:
@@ -3488,6 +3608,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -3496,9 +3619,10 @@ actions:
   error_codes: *id002
 - action_id: exclude_offers_from_allegro_prices
   title: Exclude offers from Allegro Prices
-  description: Use this resource to submit a command to exclude offers from the Allegro Prices program.
-    Returns a command ID that can be used to track the processing status. Needs the Allegro permission
-    allegro:api:campaigns.
+  description: 'Use this resource to submit a command to exclude offers from the Allegro Prices program.
+    Returns a command ID that can be used to track the processing status. Allegro registers the request
+    and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome
+    with Get Allegro Prices exclusion status. Needs the Allegro permission allegro:api:campaigns.'
   required_scopes:
   - extension:invoke
   handler:
@@ -3519,6 +3643,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -3535,8 +3662,7 @@ actions:
   - extension:invoke
   handler:
     mode: extension
-  command_type: invoke_extension_action
-  mutates_platform: true
+  mutates_platform: false
   workflow_visible: true
   parameters:
   - name: connection_ref
@@ -3554,9 +3680,7 @@ actions:
   - location
   - etag
   - warnings
-  - external_effect_status
-  - definitely_no_external_effect
-  error_codes: *id002
+  error_codes: *id001
 - action_id: update_allegro_prices_participation
   title: Update Allegro Prices participation
   description: Use this resource to update the account participation status for one or more marketplaces
@@ -3581,6 +3705,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -3750,9 +3877,10 @@ actions:
   error_codes: *id001
 - action_id: submit_offer_to_alle_discount
   title: Submit offer to AlleDiscount
-  description: Use this resource to create a command for submitting an offer. Offer will be submitted
-    to the AlleDiscount campaign only if command is processed successfully. Needs the Allegro permission
-    allegro:api:campaigns.
+  description: 'Use this resource to create a command for submitting an offer. Offer will be submitted
+    to the AlleDiscount campaign only if command is processed successfully. Allegro registers the request
+    and applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome
+    with Get AlleDiscount submission status. Needs the Allegro permission allegro:api:campaigns.'
   required_scopes:
   - extension:invoke
   handler:
@@ -3773,6 +3901,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -3781,9 +3912,11 @@ actions:
   error_codes: *id002
 - action_id: withdraw_offer_from_alle_discount
   title: Withdraw offer from AlleDiscount
-  description: Use this resource to create a command for withdrawing an offer from specific campaign.
+  description: 'Use this resource to create a command for withdrawing an offer from specific campaign.
     Offer will be withdrawn from the AlleDiscount campaign only if command is processed successfully.
-    Needs the Allegro permission allegro:api:campaigns.
+    Allegro registers the request and applies it afterwards: the step returns processing "accepted" and
+    applied false. Get the outcome with Get AlleDiscount withdrawal status. Needs the Allegro permission
+    allegro:api:campaigns.'
   required_scopes:
   - extension:invoke
   handler:
@@ -3804,6 +3937,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -3964,11 +4100,13 @@ actions:
   error_codes: *id001
 - action_id: apply_for_badge
   title: Apply for badge
-  description: This resource allows you to apply for a badge. Most badges involve additional fee charged.
+  description: 'This resource allows you to apply for a badge. Most badges involve additional fee charged.
     Your badge application will be verified and you will be notified about the verification status via
     e-mail. You can use *Location* provided in header of the response to track your application status.
     Application will be removed after 30 days when status of the application was changed form PROCESSED
-    or DECLINED. Needs the Allegro permission allegro:api:campaigns.
+    or DECLINED. Allegro registers the request and applies it afterwards: the step returns processing
+    "accepted" and applied false. Get the outcome with Get badge application. Needs the Allegro permission
+    allegro:api:campaigns.'
   required_scopes:
   - extension:invoke
   handler:
@@ -3989,6 +4127,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -3997,9 +4138,11 @@ actions:
   error_codes: *id002
 - action_id: update_offer_badge
   title: Update offer badge
-  description: This resource allows you to update a campaign badge for the given offer. You can use *Location*
+  description: 'This resource allows you to update a campaign badge for the given offer. You can use *Location*
     provided in header of the response to track your update status. Update offer price in a campaign or
-    finish marking an offer in a campaign. Needs the Allegro permission allegro:api:campaigns.
+    finish marking an offer in a campaign. Allegro registers the request and applies it afterwards: the
+    step returns processing "accepted" and applied false. Get the outcome with Get badge operation. Needs
+    the Allegro permission allegro:api:campaigns.'
   required_scopes:
   - extension:invoke
   handler:
@@ -4026,6 +4169,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -4123,6 +4269,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -4157,6 +4306,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -4187,6 +4339,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -4286,6 +4441,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -4316,6 +4474,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -4399,6 +4560,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -4428,6 +4592,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -4455,6 +4622,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -4566,6 +4736,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -4599,6 +4772,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -4666,6 +4842,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -4699,6 +4878,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5034,8 +5216,10 @@ actions:
   error_codes: *id001
 - action_id: add_order_tracking_number
   title: Add order tracking number
-  description: Add a parcel tracking number (shipment) to given order line items. This resource is rate
-    limited to 50 requests per second. Needs the Allegro permission allegro:api:orders:write.
+  description: 'Add a parcel tracking number (shipment) to given order line items. This resource is rate
+    limited to 50 requests per second. Allegro registers the request and applies it afterwards: the step
+    returns processing "accepted" and applied false. Get the outcome with Get order tracking numbers.
+    Needs the Allegro permission allegro:api:orders:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -5059,6 +5243,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5095,6 +5282,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5129,6 +5319,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5166,6 +5359,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5199,6 +5395,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5234,6 +5433,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5273,6 +5475,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5451,6 +5656,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5610,6 +5818,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5643,6 +5854,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5673,6 +5887,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5712,6 +5929,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5806,6 +6026,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5836,6 +6059,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -5969,6 +6195,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -6170,6 +6399,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -6203,6 +6435,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -6233,6 +6468,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -6266,6 +6504,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -6302,6 +6543,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -6333,6 +6577,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -6522,8 +6769,10 @@ actions:
   error_codes: *id001
 - action_id: create_shipment
   title: Create shipment
-  description: Use this resource to create shipment for delivery. Please check also new resource '/shipment-management/delivery-proposals/{orderId}'
-    to get prefilled request body for this resource. Needs the Allegro permission allegro:api:shipments:write.
+  description: 'Use this resource to create shipment for delivery. Please check also new resource ''/shipment-management/delivery-proposals/{orderId}''
+    to get prefilled request body for this resource. Allegro registers the request and applies it afterwards:
+    the step returns processing "accepted" and applied false. Get the outcome with Get shipment creation
+    status. Needs the Allegro permission allegro:api:shipments:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -6544,6 +6793,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -6552,7 +6804,9 @@ actions:
   error_codes: *id002
 - action_id: cancel_shipment
   title: Cancel shipment
-  description: Use this resource to cancel parcel. Needs the Allegro permission allegro:api:shipments:write.
+  description: 'Use this resource to cancel parcel. Allegro registers the request and applies it afterwards:
+    the step returns processing "accepted" and applied false. Get the outcome with Get shipment cancellation
+    status. Needs the Allegro permission allegro:api:shipments:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -6573,6 +6827,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -6587,8 +6844,7 @@ actions:
   - extension:invoke
   handler:
     mode: extension
-  command_type: invoke_extension_action
-  mutates_platform: true
+  mutates_platform: false
   workflow_visible: true
   parameters:
   - name: connection_ref
@@ -6608,9 +6864,7 @@ actions:
   - location
   - etag
   - warnings
-  - external_effect_status
-  - definitely_no_external_effect
-  error_codes: *id002
+  error_codes: *id001
 - action_id: download_shipment_protocol
   title: Download shipment protocol
   description: Protocol availability depends on Carrier. The answer is saved as a workflow file. Needs
@@ -6619,8 +6873,7 @@ actions:
   - extension:invoke
   handler:
     mode: extension
-  command_type: invoke_extension_action
-  mutates_platform: true
+  mutates_platform: false
   workflow_visible: true
   parameters:
   - name: connection_ref
@@ -6640,9 +6893,7 @@ actions:
   - location
   - etag
   - warnings
-  - external_effect_status
-  - definitely_no_external_effect
-  error_codes: *id002
+  error_codes: *id001
 - action_id: get_pickup_proposals
   title: Get pickup proposals
   description: Use this resource to get parcels pickup date proposals. Pickup takes place, when courier
@@ -6651,8 +6902,7 @@ actions:
   - extension:invoke
   handler:
     mode: extension
-  command_type: invoke_extension_action
-  mutates_platform: true
+  mutates_platform: false
   workflow_visible: true
   parameters:
   - name: connection_ref
@@ -6670,12 +6920,12 @@ actions:
   - location
   - etag
   - warnings
-  - external_effect_status
-  - definitely_no_external_effect
-  error_codes: *id002
+  error_codes: *id001
 - action_id: request_shipment_pickup
   title: Request shipment pickup
-  description: Use this resource to request a pickup of shipments. Needs the Allegro permission allegro:api:shipments:write.
+  description: 'Use this resource to request a pickup of shipments. Allegro registers the request and
+    applies it afterwards: the step returns processing "accepted" and applied false. Get the outcome with
+    Get pickup request status. Needs the Allegro permission allegro:api:shipments:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -6696,6 +6946,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -6835,6 +7088,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -6868,6 +7124,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -6898,6 +7157,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -6984,6 +7246,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7016,6 +7281,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7045,6 +7313,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7123,6 +7394,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7155,6 +7429,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7350,6 +7627,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7380,6 +7660,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7409,6 +7692,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7442,6 +7728,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7474,6 +7763,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7507,6 +7799,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7539,6 +7834,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7577,6 +7875,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7606,6 +7907,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7827,6 +8131,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7859,6 +8166,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7891,6 +8201,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -7920,6 +8233,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -8270,6 +8586,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -8307,6 +8626,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -8337,6 +8659,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -8345,9 +8670,11 @@ actions:
   error_codes: *id002
 - action_id: submit_advance_ship_notice
   title: Submit advance ship notice
-  description: Use this resource to submit the Advance Ship Notice. After this operation, updates of the
-    Advance Ship Notice are limited to selected properties only. See PUT /fulfillment/advance-ship-notices/{id}/submitted.
-    Needs the Allegro permission allegro:api:fulfillment:write.
+  description: 'Use this resource to submit the Advance Ship Notice. After this operation, updates of
+    the Advance Ship Notice are limited to selected properties only. See PUT /fulfillment/advance-ship-notices/{id}/submitted.
+    Allegro registers the request and applies it afterwards: the step returns processing "accepted" and
+    applied false. Get the outcome with Get advance ship notice submission status. Needs the Allegro permission
+    allegro:api:fulfillment:write.'
   required_scopes:
   - extension:invoke
   handler:
@@ -8371,6 +8698,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -8407,6 +8737,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -8436,6 +8769,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -8445,7 +8781,7 @@ actions:
 - action_id: get_fulfillment_stock
   title: Get fulfillment stock
   description: Use this resource to get a list of the products belonging to the seller, which are in Allegro
-    Warehouse. Needs the Allegro permission allegro:api:fulfillment:read.
+    Warehouse. With format csv the answer is saved as a workflow file. Needs the Allegro permission allegro:api:fulfillment:read.
   required_scopes:
   - extension:invoke
   handler:
@@ -8489,9 +8825,15 @@ actions:
   - name: accept_language
     type: string
     required: false
+  - name: format
+    type: string
+    required: false
   result_fields:
   - status
   - data
+  - file
+  - content_type
+  - size_bytes
   - location
   - etag
   - warnings
@@ -8645,6 +8987,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -8724,6 +9069,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings
@@ -8754,6 +9102,9 @@ actions:
   result_fields:
   - status
   - data
+  - processing
+  - applied
+  - check
   - location
   - etag
   - warnings

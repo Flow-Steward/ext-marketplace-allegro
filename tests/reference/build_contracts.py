@@ -34,7 +34,7 @@ import names  # noqa: E402
 
 FACTS = HERE / "allegro_api.json"
 STEP_IDS = HERE / "step_ids.json"
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 EXTENSION_ID = "flowsteward.allegro"
 CONNECTION_TYPES = {"allegro": "production", "allegro_sandbox": "sandbox"}
 HEADER = (
@@ -94,6 +94,135 @@ ERROR_CODES_READ = [
 ]
 ERROR_CODES_WRITE = ERROR_CODES_READ + ["timeout_unknown"]
 WARNINGS_OUTPUT = composite_specs.WARNINGS
+PROCESSING_OUTPUTS = composite_specs.PROCESSING_OUTPUTS
+
+#: Operations that are not GET but change nothing in Allegro: each one's own words in the
+#: pinned specification say it retrieves, calculates, queries or parses. They are reads:
+#: a test run sends them, and a failure is an ordinary read failure. Every other non-GET
+#: operation stays a change; when the specification's words leave any doubt, it stays one.
+READ_ONLY_NON_GET: dict[tuple[str, str], str] = {
+    ("POST", "/pricing/offer-fee-preview"): (
+        "Calculate fee and commission for an offer: Provides information about fee and "
+        "commission for an offer. (200: Fee calculated successfully.)"
+    ),
+    ("POST", "/shipment-management/label"): (
+        "Get shipments labels: Use this resource to get label for created shipment."
+    ),
+    ("POST", "/shipment-management/protocol"): (
+        "Get shipments protocol: Protocol availability depends on Carrier "
+        "(Allegro's guide: how to retrieve shipment protocol)."
+    ),
+    ("POST", "/shipment-management/pickup-proposals"): (
+        "Get shipments pickup proposals: Use this resource to get parcels pickup date proposals."
+    ),
+    ("POST", "/sale/allegro-prices/offers-queries"): (
+        "Query Allegro Prices offers status: Use this resource to retrieve a list of offers "
+        "and their status in the Allegro Prices program."
+    ),
+    ("POST", "/ingredients/parse"): (
+        "Parse product ingredients: Use this resource to parse raw, free-text ingredients "
+        "declarations into structured ingredient lists. (200: Returns parsing results.)"
+    ),
+}
+
+#: Changes that only register a command or a request Allegro processes afterwards: the
+#: step confirms acceptance, never application. Value: (the step that reads the outcome,
+#: or None when the specification has none; the specification's words).
+ACCEPTED_ONLY: dict[tuple[str, str], tuple[tuple[str, str] | None, str]] = {
+    ("PUT", "/offers/{offerId}/change-price-commands/{commandId}"): (
+        None,
+        "200: The command was created successfully and is queued for processing.",
+    ),
+    ("PUT", "/sale/offer-publication-commands/{commandId}"): (
+        ("GET", "/sale/offer-publication-commands/{commandId}"),
+        "201: Command was registered",
+    ),
+    ("PUT", "/sale/offer-modification-commands/{commandId}"): (
+        ("GET", "/sale/offer-modification-commands/{commandId}"),
+        "201: Command was registered",
+    ),
+    ("PUT", "/sale/offer-price-change-commands/{commandId}"): (
+        ("GET", "/sale/offer-price-change-commands/{commandId}"),
+        "201: Command was registered",
+    ),
+    ("POST", "/sale/offer-bulk-modification-commands"): (
+        ("GET", "/sale/offer-bulk-modification-commands/{commandId}"),
+        "201: Command was registered",
+    ),
+    ("PUT", "/sale/offer-quantity-change-commands/{commandId}"): (
+        ("GET", "/sale/offer-quantity-change-commands/{commandId}"),
+        "201: Command was registered",
+    ),
+    ("POST", "/sale/offer-price-automation-commands"): (
+        ("GET", "/sale/offer-price-automation-commands/{commandId}"),
+        "201: Command was registered",
+    ),
+    ("PUT", "/sale/offers/promo-options-commands/{commandId}"): (
+        ("GET", "/sale/offers/promo-options-commands/{commandId}"),
+        "201: Command was registered",
+    ),
+    ("POST", "/sale/allegro-prices/offers/submit-offer-commands"): (
+        ("GET", "/sale/allegro-prices/offers/submit-offer-commands/{commandId}"),
+        "201: Command successfully created and is being processed",
+    ),
+    ("POST", "/sale/allegro-prices/offers/exclusion-commands"): (
+        ("GET", "/sale/allegro-prices/offers/exclusion-commands/{commandId}"),
+        "201: Command successfully created and is being processed",
+    ),
+    ("POST", "/sale/alle-discount/submit-offer-commands"): (
+        ("GET", "/sale/alle-discount/submit-offer-commands/{commandId}"),
+        "201: Command has been created. Offer will be submitted to the AlleDiscount campaign "
+        "only if command is processed successfully.",
+    ),
+    ("POST", "/sale/alle-discount/withdraw-offer-commands"): (
+        ("GET", "/sale/alle-discount/withdraw-offer-commands/{commandId}"),
+        "201: Command has been created. Offer will be withdrawn from the AlleDiscount campaign "
+        "only if command is processed successfully.",
+    ),
+    ("POST", "/shipment-management/shipments/create-commands"): (
+        ("GET", "/shipment-management/shipments/create-commands/{commandId}"),
+        "A create command; its outcome is read with Get shipment creation command status.",
+    ),
+    ("POST", "/shipment-management/shipments/cancel-commands"): (
+        ("GET", "/shipment-management/shipments/cancel-commands/{commandId}"),
+        "A cancel command; its outcome is read with Get shipment cancellation status.",
+    ),
+    ("POST", "/shipment-management/pickups/create-commands"): (
+        ("GET", "/shipment-management/pickups/create-commands/{commandId}"),
+        "A create command; its outcome is read with Create pickup command status.",
+    ),
+    ("PUT", "/fulfillment/submit-commands/{command-id}"): (
+        ("GET", "/fulfillment/submit-commands/{command-id}"),
+        "201: Returns command output with status and possible errors. The command could fail "
+        "with following error codes.",
+    ),
+    ("POST", "/order/checkout-forms/{id}/shipments"): (
+        ("GET", "/order/checkout-forms/{id}/shipments"),
+        "201: The request is OK and the parcel tracking number will be assigned to the order",
+    ),
+    ("POST", "/sale/badges"): (
+        ("GET", "/sale/badge-applications/{applicationId}"),
+        "202: Successfully applied for a badge. Your badge application will be verified.",
+    ),
+    ("PATCH", "/sale/badges/offers/{offerId}/campaigns/{campaignId}"): (
+        ("GET", "/sale/badge-operations/{operationId}"),
+        "202: Successfully requested badge update.",
+    ),
+}
+#: Changes Allegro may answer either way: HTTP 202 means accepted, the other documented
+#: statuses completed. Value: the step that reads the outcome of an accepted request.
+ACCEPTED_ON_202: dict[tuple[str, str], tuple[str, str]] = {
+    ("POST", "/sale/product-offers"): (
+        "GET",
+        "/sale/product-offers/{offerId}/operations/{operationId}",
+    ),
+    ("PATCH", "/sale/product-offers/{offerId}"): (
+        "GET",
+        "/sale/product-offers/{offerId}/operations/{operationId}",
+    ),
+}
+#: Names of the formats a step may ask for besides JSON (the media type's subtype).
+FORMAT_NAMES = {"text/csv": "csv"}
 
 
 # -- names ---------------------------------------------------------------------------------
@@ -191,6 +320,25 @@ def success_types(op: dict[str, Any]) -> list[str]:
     return seen
 
 
+def formats_of(op: dict[str, Any]) -> dict[str, str]:
+    """{format name: media type} of an operation whose successful answers are documented
+    both as JSON and in another type, with no Accept parameter to choose between them;
+    empty otherwise. JSON stays the default."""
+    if any(p["in"] == "header" and p["name"].lower() == "accept" for p in op["parameters"]):
+        return {}
+    types = success_types(op)
+    json_type = choose_json(types)
+    other = [t for t in types if t not in JSON_TYPES]
+    if not json_type or not other:
+        return {}
+    out = {"json": json_type}
+    for media in other:
+        if media not in FORMAT_NAMES:
+            raise SystemExit(f"{key(op)}: no format name for {media}")
+        out[FORMAT_NAMES[media]] = media
+    return out
+
+
 def answer_of(op: dict[str, Any]) -> tuple[str, str | None, list[str]]:
     """(answer kind, Accept header, the Accept choices of a step that asks for one)."""
     choices: list[str] = []
@@ -260,7 +408,8 @@ def area_of(op: dict[str, Any]) -> str:
 
 
 _READ_MORE = re.compile(
-    r"\s*(Read more|For more information|More information)[^.]*?(PL\s*/\s*EN|EN\s*/\s*PL)\.?", re.I
+    r"\s*(Read more|For more information|More information)[^.]*?(PL\s*/\s*EN|EN\s*/\s*PL)\.?",
+    re.IGNORECASE,
 )
 
 
@@ -295,6 +444,34 @@ def sentences(text: str, limit: int) -> str:
     return out
 
 
+def kind_of(op: dict[str, Any]) -> str:
+    if op["method"] == "GET" or (op["method"], op["path"]) in READ_ONLY_NON_GET:
+        return "read"
+    return "write"
+
+
+def processing_of(op: dict[str, Any], ids: dict[str, str]) -> dict[str, Any] | None:
+    """How a write's answer is read: always accepted (a registered command), accepted on
+    HTTP 202, or completed; and the step that reads the outcome of an accepted one."""
+    if kind_of(op) != "write":
+        return None
+    where = (op["method"], op["path"])
+    check: tuple[str, str] | None = None
+    if where in ACCEPTED_ONLY:
+        check = ACCEPTED_ONLY[where][0]
+        always = True
+    else:
+        always = False
+        check = ACCEPTED_ON_202.get(where)
+        if "202" in op["responses"] and where not in ACCEPTED_ON_202:
+            raise SystemExit(f"{key(op)} documents HTTP 202 but names no check step")
+    return {
+        "accepted_always": always,
+        "check": ids[f"{check[0]} {check[1]}"] if check else None,
+        "check_title": names.TITLES[check] if check else None,
+    }
+
+
 def describe(op: dict[str, Any], entry: dict[str, Any]) -> str:
     text = sentences(op["description"], 420) or op["summary"].rstrip(".") + "."
     if not text.endswith((".", "!", "?", "…")):
@@ -306,6 +483,26 @@ def describe(op: dict[str, Any], entry: dict[str, Any]) -> str:
         notes.append("Beta in Allegro: it may still change.")
     if entry["answer"] == "file":
         notes.append("The answer is saved as a workflow file.")
+    for name in entry.get("formats") or {}:
+        if name != "json":
+            notes.append(f"With format {name} the answer is saved as a workflow file.")
+    processing = entry.get("processing")
+    if processing:
+        then = (
+            f" Get the outcome with {processing['check_title']}."
+            if processing["check_title"]
+            else " Get the outcome from Allegro afterwards."
+        )
+        if processing["accepted_always"]:
+            notes.append(
+                "Allegro registers the request and applies it afterwards: the step returns "
+                'processing "accepted" and applied false.' + then
+            )
+        elif "202" in entry["success"]:
+            notes.append(
+                "When Allegro answers HTTP 202 it has accepted the request and applies it "
+                'afterwards: the step returns processing "accepted" and applied false.' + then
+            )
     if op["user_scopes"]:
         notes.append("Needs the Allegro permission " + " or ".join(op["user_scopes"]) + ".")
     else:
@@ -316,7 +513,7 @@ def describe(op: dict[str, Any], entry: dict[str, Any]) -> str:
 # -- the registry --------------------------------------------------------------------------
 
 
-def registry_entry(op: dict[str, Any], step_id: str) -> dict[str, Any]:
+def registry_entry(op: dict[str, Any], step_id: str, ids: dict[str, str]) -> dict[str, Any]:
     answer, accept, accept_choices = answer_of(op)
     path_params: list[dict[str, Any]] = []
     query: list[dict[str, Any]] = []
@@ -375,7 +572,7 @@ def registry_entry(op: dict[str, Any], step_id: str) -> dict[str, Any]:
         "vendor_operation_id": op["operation_id"],
         "tag": op["tags"][0],
         "area": area_of(op),
-        "kind": "read" if op["method"] == "GET" else "write",
+        "kind": kind_of(op),
         "deprecated": op["deprecated"],
         "beta": beta,
         "scopes": op["user_scopes"],
@@ -389,6 +586,17 @@ def registry_entry(op: dict[str, Any], step_id: str) -> dict[str, Any]:
         "success": sorted(c for c in op["responses"] if c[:1] in {"2", "3"}),
         "refusals": documented_refusals(op),
     }
+    processing = processing_of(op, ids)
+    if processing:
+        entry["processing"] = processing
+    formats = formats_of(op)
+    if formats:
+        entry["formats"] = formats
+        other = next(m for n, m in formats.items() if n != "json")
+        entry["file"] = {
+            "filename": "allegro-" + snake(step_id).replace("_", "-") + "." + FORMAT_NAMES[other],
+            "content_type": other,
+        }
     if answer == "file":
         media = accept_choices[0] if accept_choices else (accept or "").split(", ")[0]
         filename, content_type = DOWNLOAD_FILES.get(
@@ -430,7 +638,7 @@ def ordered_operations(
 
 
 def build_registry(data: dict[str, Any], ids: dict[str, str]) -> dict[str, Any]:
-    operations = {sid: registry_entry(op, sid) for sid, op in ordered_operations(data, ids)}
+    operations = {sid: registry_entry(op, sid, ids) for sid, op in ordered_operations(data, ids)}
     return {
         "source": data["source"],
         "scopes": sorted({s for op in data["operations"] for s in op["user_scopes"]}),
@@ -521,6 +729,47 @@ def step_inputs(entry: dict[str, Any]) -> list[dict[str, Any]]:
                 },
                 "widget": "select",
                 "options": entry["accept_choices"],
+            }
+        )
+    formats = entry.get("formats")
+    if formats:
+        names_ = list(formats)
+        others = [n for n in names_ if n != "json"]
+        ignored = [
+            prm["input"]
+            for prm in entry["query"]
+            if re.search(
+                r"ignored for (" + "|".join(map(re.escape, formats.values())) + ")",
+                prm["description"],
+                re.IGNORECASE,
+            )
+        ]
+        note = ""
+        if ignored:
+            note = (
+                " "
+                + ", ".join(ignored)
+                + " do not apply with "
+                + " or ".join(others)
+                + " (Allegro ignores them for that format)."
+            )
+        rows.append(
+            {
+                "name": "format",
+                "required": False,
+                "schema": {
+                    "type": "string",
+                    "enum": names_,
+                    "title": "Format",
+                    "description": (
+                        "json (default): Allegro's answer in data. "
+                        + ", ".join(others)
+                        + ": the answer as a workflow file in file."
+                        + note
+                    ),
+                },
+                "widget": "select",
+                "options": names_,
             }
         )
     body = entry["body"]
@@ -640,11 +889,32 @@ def generic_outputs(entry: dict[str, Any]) -> list[dict[str, Any]]:
                 "description": "What Allegro returned (JSON).",
             }
         )
+        if entry.get("formats"):
+            rows += [
+                {
+                    "name": "file",
+                    "type": ["string", "null"],
+                    "value_type": "artifact_handle",
+                    "description": "With a format other than json: Allegro's answer, as a workflow file.",
+                },
+                {
+                    "name": "content_type",
+                    "type": ["string", "null"],
+                    "description": "The file's type as Allegro sent it.",
+                },
+                {
+                    "name": "size_bytes",
+                    "type": ["integer", "null"],
+                    "description": "The file's size.",
+                },
+            ]
+    if entry["kind"] == "write":
+        rows += PROCESSING_OUTPUTS
     rows += [
         {
             "name": "location",
             "type": ["string", "null"],
-            "description": "The Location header, when Allegro sends one (where to check an operation still being processed).",
+            "description": "The Location header, when Allegro sends one (for an accepted request: where Allegro reports its outcome).",
         },
         {
             "name": "etag",
@@ -1109,6 +1379,11 @@ def api_pages(rows: list[dict[str, Any]], registry: dict[str, Any]) -> dict[str,
             "(a workflow file for PDFs, labels and attachments), `location`, `etag` and `warnings`.",
             "- **Request bodies** are given as JSON in `body`, exactly as Allegro documents them; "
             'amounts as text such as "49.99".',
+            "- **Accepted or completed.** Every step that changes data returns `processing`: "
+            "`completed` when Allegro answered that the change is made, `accepted` when Allegro "
+            "registered a command or accepted the request (HTTP 202) and applies it afterwards. "
+            "With `accepted`, `applied` is false and `check` names the step that reads the "
+            "outcome and the address Allegro returned for it.",
             "- **Changes are sent once.** A step that changes data is never retried automatically; "
             "when its outcome is unclear it says so, and you check Allegro before running it again. "
             "Test runs never send changes.",
@@ -1170,23 +1445,29 @@ def coverage_page(registry: dict[str, Any]) -> dict[str, Any]:
     by_method: dict[str, int] = {}
     for e in ops:
         by_method[e["method"]] = by_method.get(e["method"], 0) + 1
-    files = sum(1 for e in ops if e["answer"] == "file")
+    files = sum(1 for e in ops if e["answer"] == "file" or e.get("formats"))
     uploads = sum(1 for e in ops if e["body"] and (e["body"]["binary"] or e["body"]["multipart"]))
     beta = sum(1 for e in ops if e["beta"])
     deprecated = sum(1 for e in ops if e["deprecated"])
     total = len(registry["operations"])
+    gets = by_method.get("GET", 0)
+    reads = sum(1 for e in ops if e["kind"] == "read")
+    accepted = sum(1 for e in ops if (e.get("processing") or {}).get("accepted_always"))
     body = "\n".join(
         [
             f"The Allegro REST API specification (OpenAPI {source['openapi']}, downloaded "
             f"{source['downloaded']}, SHA-256 `{source['sha256'][:12]}…`) documents {total} "
             f"operations; **{total} of them have their own step** in this version.",
             "",
-            f"- **{by_method.get('GET', 0)} reads** (GET).",
-            f"- **{total - by_method.get('GET', 0)} changes**: {by_method.get('POST', 0)} POST, "
+            f"- **{reads} reads**: {gets} GET and {reads - gets} POST that Allegro documents "
+            "as retrieving, calculating, querying or parsing (labels, protocols, pickup "
+            "proposals, fee preview, Allegro Prices query, ingredients). Test runs send reads.",
+            f"- **{total - reads} changes**: {by_method.get('POST', 0) - (reads - gets)} POST, "
             f"{by_method.get('PUT', 0)} PUT, {by_method.get('PATCH', 0)} PATCH and "
-            f"{by_method.get('DELETE', 0)} DELETE. Every one is a change for Flow Steward, also "
-            "the few that Allegro uses to calculate or query, so test runs never send them.",
-            f"- **{files} steps save a file** (PDF, labels, attachments) and **{uploads} upload one**.",
+            f"{by_method.get('DELETE', 0)} DELETE. Test runs never send them. {accepted} of them "
+            "register a command or request that Allegro applies afterwards; they return "
+            "processing accepted and name the step that reads the outcome.",
+            f"- **{files} steps save a file** (PDF, labels, attachments, CSV) and **{uploads} upload one**.",
             f"- **{beta} steps are beta** and **{deprecated} deprecated** in Allegro.",
             "",
             "The everyday steps on top: test the connection, get all your offers, update stock and "

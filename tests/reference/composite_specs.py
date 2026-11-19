@@ -41,6 +41,38 @@ WARNINGS = {
     "description": "What the step could not do fully or what to check.",
 }
 
+#: The outputs every write returns about what Allegro's answer confirms.
+PROCESSING_OUTPUTS: list[dict[str, Any]] = [
+    {
+        "name": "processing",
+        "type": ["string", "null"],
+        "enum": ["completed", "accepted", None],
+        "description": (
+            "completed: Allegro answered that the change is made. accepted: Allegro accepted "
+            "the request (HTTP 202) or registered the command, and applies it afterwards; "
+            "check the outcome with the step named in check. None in a test run."
+        ),
+    },
+    {
+        "name": "applied",
+        "type": ["boolean", "null"],
+        "description": (
+            "True with processing completed. False with processing accepted (the outcome is "
+            "read with the check step) and in a test run."
+        ),
+    },
+    {
+        "name": "check",
+        "type": ["object", "null"],
+        "additionalProperties": True,
+        "description": (
+            "With processing accepted: operation_id, the step that reads the outcome (none "
+            "when Allegro documents no such step), and location, the address Allegro returned "
+            "for it (none when it sent none)."
+        ),
+    },
+]
+
 
 def _text(name: str, title: str, description: str, **extra: Any) -> dict[str, Any]:
     return {"name": name, "title": title, "description": description, "type": "string", **extra}
@@ -194,8 +226,9 @@ COMPOSITES: list[dict[str, Any]] = [
             "command of up to 1000 offers. Each command ID is derived from batch_key and the "
             "command's content, so running the step again with the same rows and batch key "
             "never registers a change twice: Allegro answers that the command already exists. "
-            "Allegro applies the commands afterwards; read the outcome per offer with Get "
-            "stock and price update results. Stock must be at least 1 and a price is an exact "
+            "The step confirms that Allegro registered the commands (processing accepted, "
+            "applied false); Allegro applies them afterwards, and Get stock and price update "
+            "results reads the outcome per offer. Stock must be at least 1 and a price is an exact "
             "decimal with at most two places. Needs allegro:api:sale:offers:write."
         ),
         "inputs": [
@@ -254,6 +287,7 @@ COMPOSITES: list[dict[str, Any]] = [
                 "type": "integer",
                 "description": "How many offers the commands cover.",
             },
+            *PROCESSING_OUTPUTS,
             WARNINGS,
             {"name": "external_effect_status", "type": "string"},
             {"name": "definitely_no_external_effect", "type": "boolean"},
