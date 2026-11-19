@@ -98,8 +98,11 @@ actions:
     ID is derived from batch_key and the command''s content, so running the step again with the same rows
     and batch key never registers a change twice: Allegro answers that the command already exists. The
     step confirms that Allegro registered the commands (processing accepted, applied false); Allegro applies
-    them afterwards, and Get stock and price update results reads the outcome per offer. Stock must be
-    at least 1 and a price is an exact decimal with at most two places. Needs allegro:api:sale:offers:write.'
+    them afterwards, and Get stock and price update results reads the outcome per offer. When Allegro
+    certainly refuses a command after earlier ones were registered, or time runs out before the next one
+    is sent, the step still succeeds: each command has its status, applied is empty and a warning says
+    what to fix before running it again. Stock must be at least 1 and a price is an exact decimal with
+    at most two places. Needs allegro:api:sale:offers:write.'
   required_scopes:
   - extension:invoke
   handler:

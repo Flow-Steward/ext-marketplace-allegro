@@ -357,8 +357,14 @@ def test_a_failure_part_way_says_what_was_registered_and_sends_no_more() -> None
 def test_a_clear_refusal_part_way_still_reports_the_registered_commands() -> None:
     fake = FakeAllegro(echo, refuse(422))
     result = run("update_stock_and_prices", {"rows": ROWS, "batch_key": "k"}, fake)
-    assert result["external_effect_status"] == "timeout_unknown"
-    assert "was not registered" in result["error"]
+    # The registered command is a confirmed change: a partial success, not an unknown.
+    assert result["ok"] is True and result["external_effect_status"] == "succeeded"
+    assert [c["status"] for c in result["result"]["commands"]] == [
+        "registered",
+        "refused",
+        "not_sent",
+    ]
+    assert "was refused" in result["result"]["warnings"][-1]
 
 
 def test_a_test_run_plans_the_same_commands_and_sends_nothing() -> None:

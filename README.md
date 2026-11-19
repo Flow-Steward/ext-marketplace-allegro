@@ -72,7 +72,7 @@ Run **Update stock and prices** on a schedule with one row per offer (offer ID a
 Use **Get order events** to see which orders are new or paid since the last run, read them with **Get orders**, and pass them to the steps of your ERP or accounting extension.
 
 **What happens if the same stock update runs twice?**
-With the same rows and batch key, Allegro recognizes the commands as already registered and does not apply them again.
+With the same rows and batch key, Allegro recognizes the commands as already registered and does not apply them again. If Allegro refuses one command after others were registered, the step succeeds, marks each command `registered`, `refused` or `not_sent` and says what to fix; run it again with the same rows and batch key after the fix.
 
 **Can I try the Allegro integration without touching my live offers?**
 Yes. A test run of a workflow never sends changes, and a connection to Allegro Sandbox works against Allegro's separate test marketplace.

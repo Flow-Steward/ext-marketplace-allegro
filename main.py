@@ -10,7 +10,7 @@ from decimal import Decimal
 from typing import Any
 
 from dispatcher import dispatch_runtime
-from runtime import numbers
+from runtime import nesting, numbers
 
 MAX_INPUT_BYTES = 2 * 1024 * 1024
 MAX_SERIALIZED_RESPONSE_BYTES = 9 * 512 * 1024
@@ -28,6 +28,8 @@ def main() -> int:
             payload = _load_payload(raw)
         except UnboundedNumber as exc:
             response = _refused(str(exc))
+        except (TooDeep, RecursionError):
+            response = _refused(TOO_DEEP)
         except (UnicodeDecodeError, json.JSONDecodeError):
             response = _refused("The request is not valid JSON")
         else:
@@ -40,6 +42,13 @@ def main() -> int:
 
 class UnboundedNumber(ValueError):
     """A number of the request is outside what this extension writes out in full."""
+
+
+class TooDeep(ValueError):
+    """The request nests deeper than ``nesting.MAX_REQUEST_DEPTH``."""
+
+
+TOO_DEEP = f"The request is nested deeper than {nesting.MAX_REQUEST_DEPTH} levels; nothing was sent"
 
 
 def _float(text: str) -> Decimal:
@@ -73,11 +82,15 @@ def _load_payload(raw: bytes) -> dict[str, Any]:
     Nothing in the host's envelope is used as a float, so the whole request is
     read the same way. A number outside ``runtime.numbers``' bounds (digits and
     exponent, from ``Decimal.as_tuple()``) refuses the request before it is used,
-    so ``1e1000000`` is never written out in full.
+    so ``1e1000000`` is never written out in full. A request nested deeper than
+    ``nesting.MAX_REQUEST_DEPTH`` is refused before it is parsed.
     """
     text = raw.decode("utf-8")
     if not text.strip():
         return {}
+    # Counted on the bytes before parsing: the JSON reader recurses per level.
+    if nesting.too_deep(raw, nesting.MAX_REQUEST_DEPTH):
+        raise TooDeep(TOO_DEEP)
     payload = json.loads(text, parse_float=_float, parse_int=_int, parse_constant=_constant)
     return payload if isinstance(payload, dict) else {}
 
@@ -105,37 +118,74 @@ def _bounded_serialized_response(response: Mapping[str, Any]) -> tuple[dict[str,
 #: What the last-resort answer keeps of a response that is too large.
 MAX_KEPT_TEXT = 200
 MAX_KEPT_FIELDS = 50
+MAX_KEPT_WARNINGS = 5
+CUT_TO_IDENTIFIERS = (
+    "The change was saved, but its full result is too large for the step output; only its "
+    "identifiers and short values are kept: see the rest in Allegro"
+)
 
 
 def _too_large(response: Mapping[str, Any]) -> tuple[dict[str, Any], bytes]:
-    """The last-resort answer: it keeps the write's facts and the result's short values.
+    """The last-resort answer when the response does not fit the output.
 
-    A write may already have been made; its ``external_effect_status`` and
-    ``definitely_no_external_effect`` and its identifiers must reach the host even when
-    the full result cannot.
+    A change Allegro confirmed stays a success (``ok`` true, ``succeeded``): the host
+    turns a failed answer that claims ``succeeded`` into an unknown outcome, and the
+    change was made. Its result is cut to its short values (identifiers, status,
+    processing) with a warning that says so. Any other response becomes
+    ``response_too_large`` with its effect facts kept.
     """
-    message = "The extension response exceeds its safe output limit"
     status = response.get("external_effect_status")
+    result = response.get("result")
+    kept = _short_values(result) if isinstance(result, Mapping) else {}
     if status == "succeeded":
-        message += "; the change was saved, its identifiers are in the result"
-    elif status == "timeout_unknown":
+        warnings = result.get("warnings") if isinstance(result, Mapping) else None
+        kept["warnings"] = [
+            str(w)[:MAX_KEPT_TEXT] for w in (warnings or [])[:MAX_KEPT_WARNINGS]
+        ] + [CUT_TO_IDENTIFIERS]
+        final = {
+            "ok": True,
+            "result": kept,
+            "error_code": None,
+            "error": None,
+            "errors": [],
+            "external_effect_status": "succeeded",
+            "definitely_no_external_effect": False,
+        }
+        return final, _json_bytes(final)
+    message = "The extension response exceeds its safe output limit"
+    if status == "timeout_unknown":
         message += "; a change may have been saved, check it before running the step again"
     error_response = _error_response("response_too_large", message)
     for key in ("external_effect_status", "definitely_no_external_effect"):
         if key in response:
             error_response[key] = response[key]
-    result = response.get("result")
     if isinstance(result, Mapping):
-        kept = {
-            key: value
-            for key, value in list(result.items())[: MAX_KEPT_FIELDS * 4]
+        error_response["result"] = kept
+    return error_response, _json_bytes(error_response)
+
+
+def _short_values(result: Mapping[str, Any]) -> dict[str, Any]:
+    """The result's short scalar values, and those one level down in an object (such as
+    ``check``); at most ``MAX_KEPT_FIELDS`` each."""
+
+    def short(value: Mapping[str, Any]) -> dict[str, Any]:
+        out = {
+            key: item
+            for key, item in list(value.items())[: MAX_KEPT_FIELDS * 4]
             if isinstance(key, str)
             and len(key) <= MAX_KEPT_TEXT
-            and isinstance(value, (str, int, float, bool, type(None)))
-            and len(str(value)) <= MAX_KEPT_TEXT
+            and isinstance(item, (str, int, float, bool, type(None)))
+            and len(str(item)) <= MAX_KEPT_TEXT
         }
-        error_response["result"] = dict(list(kept.items())[:MAX_KEPT_FIELDS])
-    return error_response, _json_bytes(error_response)
+        return dict(list(out.items())[:MAX_KEPT_FIELDS])
+
+    kept = short(result)
+    for key, item in list(result.items())[: MAX_KEPT_FIELDS * 4]:
+        if key == "warnings" or not isinstance(key, str) or len(key) > MAX_KEPT_TEXT:
+            continue
+        if isinstance(item, Mapping) and len(kept) < MAX_KEPT_FIELDS:
+            kept[key] = short(item)
+    return kept
 
 
 def _sanitize_json_value(value: Any) -> tuple[Any, bool]:

@@ -13,6 +13,11 @@ components:
     - Numbers: a request number with more than 40 digits or an exponent outside −30…+30 is refused before anything is sent; such a number in Allegro's answer is kept as text in Allegro's own notation, so a confirmed change is never lost to it.
     - Six operations that Allegro documents as retrieving, calculating, querying or parsing are now reads: Download shipment labels, Download shipment protocol, Get pickup proposals, Calculate offer fee and commission, Query Allegro Prices status of offers and Parse product ingredients. Test runs send them, and a label or protocol download saves its file.
     - Get fulfillment stock takes `format`: `json` (default, as before) or `csv`, which saves Allegro's CSV as a workflow file; `limit`, `offset`, `sort` and `product_id` do not apply with `csv`.
+    - A batch only partly registered by Update stock and prices: when Allegro certainly refuses a command after earlier ones were registered, or the time runs out before the next one is sent, the step succeeds with each command's status (`registered`, `already_registered`, `refused`, `not_sent`), `applied` empty and a warning. When a command's outcome is unknown, the error names the registered commands within the 512 characters Flow Steward keeps of an error message.
+    - A step that changes data and ends without sending anything reports no external effect (as a test run does), with `processing` empty and `applied` false.
+    - Requests nested deeper than 32 levels are refused before they are read; Allegro answers nested deeper than 48 levels are not read: a read fails with `invalid_response`, a confirmed change keeps its status, address and `processing` with `data` empty and a warning.
+    - When a confirmed change's result is too large for the step output, the step still succeeds with the result cut to its identifiers and short values and a warning; the output budget measures amounts as they are written.
+    - The `Location` and other returned headers have the access token removed before they reach the result.
 
     ## 0.1.0 — 2026-11-18
 

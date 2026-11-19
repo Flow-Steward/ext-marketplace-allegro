@@ -15,7 +15,7 @@ from .context import ArtifactReader, ArtifactWriter, Context, TransportFactory
 from .errors import ExtensionError, error_response, invalid
 from .files import ARTIFACT_TIMEOUT_SECONDS
 from .limits import STEP_MARGIN_SECONDS, STEP_TIMEOUT_SECONDS
-from .results import fit_write_result, mark_write, ok
+from .results import fit_write_result, mark_write, nothing_sent, ok
 from .transport import AllegroTransport, DeadlineReached
 
 
@@ -65,6 +65,10 @@ def handle_runtime(
             result = composites.COMPOSITES[operation_id](context)
         else:
             result = generic.run(context, operation_id)
+        if effect and not transport.mutated:
+            # Nothing that can change data was sent: the same pair as a test run, not
+            # a write that succeeded.
+            return ok(nothing_sent(fit_write_result(result)))
         if effect:
             return ok(mark_write(fit_write_result(result)))
         budget.ensure_fits(result)

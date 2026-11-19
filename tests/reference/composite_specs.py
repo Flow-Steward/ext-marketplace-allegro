@@ -50,7 +50,8 @@ PROCESSING_OUTPUTS: list[dict[str, Any]] = [
         "description": (
             "completed: Allegro answered that the change is made. accepted: Allegro accepted "
             "the request (HTTP 202) or registered the command, and applies it afterwards; "
-            "check the outcome with the step named in check. None in a test run."
+            "check the outcome with the step named in check. None in a test run and when "
+            "nothing was sent."
         ),
     },
     {
@@ -58,7 +59,8 @@ PROCESSING_OUTPUTS: list[dict[str, Any]] = [
         "type": ["boolean", "null"],
         "description": (
             "True with processing completed. False with processing accepted (the outcome is "
-            "read with the check step) and in a test run."
+            "read with the check step), in a test run and when nothing was sent. Empty when "
+            "only part of a batch was registered."
         ),
     },
     {
@@ -228,7 +230,10 @@ COMPOSITES: list[dict[str, Any]] = [
             "never registers a change twice: Allegro answers that the command already exists. "
             "The step confirms that Allegro registered the commands (processing accepted, "
             "applied false); Allegro applies them afterwards, and Get stock and price update "
-            "results reads the outcome per offer. Stock must be at least 1 and a price is an exact "
+            "results reads the outcome per offer. When Allegro certainly refuses a command after "
+            "earlier ones were registered, or time runs out before the next one is sent, the step "
+            "still succeeds: each command has its status, applied is empty and a warning says "
+            "what to fix before running it again. Stock must be at least 1 and a price is an exact "
             "decimal with at most two places. Needs allegro:api:sale:offers:write."
         ),
         "inputs": [
@@ -280,7 +285,7 @@ COMPOSITES: list[dict[str, Any]] = [
                 "name": "commands",
                 "type": "array",
                 "items": {"type": "object", "additionalProperties": True},
-                "description": "Each command: command_id, kind (quantity or price), value, currency, offers_count and status (registered or already_registered).",
+                "description": "Each command: command_id, kind (quantity or price), value, currency, offers_count and status: registered, already_registered, refused (Allegro certainly refused it after earlier commands were registered) or not_sent.",
             },
             {
                 "name": "offers_count",

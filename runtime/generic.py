@@ -13,7 +13,9 @@ built from the pinned specification by tests/reference/build_contracts.py:
 - a JSON request body is the ``body`` input, sent as given with exact decimals; its
   top-level required fields are checked here and the rest by Allegro;
 - a file upload takes a workflow file (``file``) and the documented media type;
-- a JSON answer is ``data``; a binary answer (PDF, labels, attachments) is saved as a
+- a JSON answer is ``data``; one nested deeper than 48 levels is not read (a read
+  fails with ``invalid_response``, a confirmed write returns its facts with ``data``
+  empty and a warning); a binary answer (PDF, labels, attachments) is saved as a
   workflow file and never put into the step output; where Allegro documents the
   answer both as JSON and in another type (CSV), the ``format`` input chooses, JSON by
   default;
@@ -34,11 +36,18 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
-from . import budget, errors, files
+from . import budget, errors, files, nesting
 from .context import Context
 from .errors import invalid
 from .params import check, text, wire
-from .transport import MAX_ANSWER_BYTES, MAX_FILE_ANSWER_BYTES, Answer, Call, dumps_json
+from .transport import (
+    MAX_ANSWER_BYTES,
+    MAX_FILE_ANSWER_BYTES,
+    Answer,
+    Call,
+    TooDeep,
+    dumps_json,
+)
 
 REGISTRY_FILE = Path(__file__).resolve().parent / "registry.json"
 JSON_MEDIA = (
@@ -296,6 +305,20 @@ def answer_result(
         if not answer.empty:
             try:
                 data = context.transport.json(answer)
+            except TooDeep:
+                if not write:
+                    raise errors.no_effect(
+                        errors.INVALID_RESPONSE,
+                        f"Allegro answered {shown} with JSON nested deeper than "
+                        f"{nesting.MAX_ANSWER_DEPTH} levels; it is not read",
+                        failure_class="provider",
+                        retryable=False,
+                    ) from None
+                warnings.append(
+                    f"Allegro confirmed {shown} (HTTP {answer.status}) but its answer is nested "
+                    f"deeper than {nesting.MAX_ANSWER_DEPTH} levels, so it is not returned "
+                    "(data is empty); see the record in Allegro"
+                )
             except ValueError:
                 if not write:
                     raise errors.no_effect(

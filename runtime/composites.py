@@ -24,11 +24,11 @@ from collections.abc import Callable, Mapping
 from decimal import Decimal
 from typing import Any
 
-from . import budget, errors, files, generic
+from . import budget, errors, files, generic, nesting
 from .context import Context
 from .errors import ExtensionError, invalid
 from .params import decimal, integer, text
-from .transport import MIN_CALL_WINDOW_SECONDS, DeadlineReached, dumps_json
+from .transport import MIN_CALL_WINDOW_SECONDS, DeadlineReached, TooDeep, dumps_json
 
 #: Fixed namespace of the command IDs (never change it: ids must stay reproducible).
 COMMAND_NAMESPACE = uuid.UUID("5b7c2f0e-8a54-4c1b-9b8e-0f3d7a1c6e42")
@@ -52,10 +52,15 @@ def _read(context: Context, operation_id: str, given: Mapping[str, Any]) -> Any:
     answer = context.transport.read(generic.to_call(context, entry, plan))
     try:
         return context.transport.json(answer)
-    except ValueError:
+    except ValueError as exc:
+        what = (
+            f"JSON nested deeper than {nesting.MAX_ANSWER_DEPTH} levels"
+            if isinstance(exc, TooDeep)
+            else "something that is not JSON"
+        )
         raise errors.no_effect(
             errors.INVALID_RESPONSE,
-            f"Allegro answered {plan.shown} with something that is not JSON",
+            f"Allegro answered {plan.shown} with {what}",
             failure_class="provider",
             retryable=False,
         ) from None
@@ -589,13 +594,19 @@ def update_stock_and_prices(context: Context) -> dict[str, Any]:
         try:
             answer = context.transport.write(generic.to_call(context, entry, plan))
         except DeadlineReached:
-            raise _midway(
-                done, commands, command, "the step ran out of time", unsure=False
-            ) from None
+            # Raised before the request left: this command was certainly not sent.
+            if not done:
+                raise _midway(
+                    done, commands, command, "the step ran out of time", unsure=False
+                ) from None
+            return _partial(done, commands, command, "the step ran out of time", warnings)
         except ExtensionError as exc:
             if exc.http_status == 409 and exc.definitely_no_external_effect:
                 done.append(command.summary("already_registered"))
                 continue
+            if exc.definitely_no_external_effect and done:
+                # A definite refusal after confirmed commands: those stay registered.
+                return _partial(done, commands, command, exc.message, warnings, refused=True)
             raise _midway(
                 done,
                 commands,
@@ -615,12 +626,7 @@ def update_stock_and_prices(context: Context) -> dict[str, Any]:
                 "update results"
             )
         done.append(command.summary("registered"))
-    again = sum(1 for c in done if c["status"] == "already_registered")
-    if again:
-        warnings.append(
-            f"{again} of {len(done)} commands were already registered by an earlier run with the "
-            "same batch key and rows; they were not applied again"
-        )
+    _say_again(done, warnings)
     # The commands are registered; Allegro applies them afterwards, and Get stock and
     # price update results reads the outcome per offer.
     return {
@@ -633,6 +639,57 @@ def update_stock_and_prices(context: Context) -> dict[str, Any]:
     }
 
 
+def _say_again(done: list[dict[str, Any]], warnings: list[str]) -> None:
+    again = sum(1 for c in done if c["status"] == "already_registered")
+    if again:
+        warnings.append(
+            f"{again} of {len(done)} commands were already registered by an earlier run with the "
+            "same batch key and rows; they were not applied again"
+        )
+
+
+def _partial(
+    done: list[dict[str, Any]],
+    commands: list[Command],
+    failed: Command,
+    reason: str,
+    warnings: list[str],
+    *,
+    refused: bool = False,
+) -> dict[str, Any]:
+    """Some commands registered, then one certainly refused or certainly not sent.
+
+    The registered ones are changes Allegro confirmed, so the step succeeds; each
+    command has its status (registered, already_registered, refused, not_sent) and
+    ``applied`` is unknown (null) because part of the batch is not registered."""
+    rows = list(done)
+    rows.append(failed.summary("refused" if refused else "not_sent"))
+    rows += [c.summary("not_sent") for c in commands[len(done) + 1 :]]
+    _say_again(done, warnings)
+    registered = sum(1 for c in done if c["status"] in {"registered", "already_registered"})
+    warnings.append(
+        f"Only {registered} of {len(commands)} commands are registered: command "
+        f"{failed.command_id} ({failed.kind} {failed.value}) "
+        + ("was refused" if refused else "was not sent")
+        + f": {errors.safe_text(reason, 300)}; {len(commands) - len(done) - 1} more were not "
+        "sent. Fix the cause and run the step again with the same rows and batch key: "
+        "registered commands are not applied twice"
+    )
+    return {
+        "commands": rows,
+        "offers_count": sum(c["offers_count"] for c in done),
+        "processing": "accepted",
+        "applied": None,
+        "check": {"operation_id": "get_stock_and_price_update_results", "location": None},
+        "warnings": warnings,
+    }
+
+
+#: The host keeps an error message of at most 512 characters (core step_failures).
+MAX_ERROR_MESSAGE = 500
+MAX_IDS_IN_MESSAGE = 5
+
+
 def _midway(
     done: list[dict[str, Any]],
     commands: list[Command],
@@ -642,7 +699,11 @@ def _midway(
     unsure: bool,
     base: ExtensionError | None = None,
 ) -> ExtensionError:
-    """A failure part way: what was registered, what failed, what was not sent."""
+    """A failure part way: what was registered, what failed, what was not sent.
+
+    The host's error envelope has no structured field for the registered command IDs
+    (its error rows keep only code, message, path and selector), so they are in the
+    text, bounded so the whole message stays under the 512 characters the host keeps."""
     registered = [c["command_id"] for c in done]
     left = len(commands) - len(done) - 1
     if not done and not unsure:
@@ -651,23 +712,27 @@ def _midway(
         return errors.no_effect(
             errors.TIMEOUT, "The step ran out of time before Allegro was called"
         )
-    message = (
-        f"{len(done)} of {len(commands)} commands are registered"
-        + (
-            f" ({', '.join(registered[:20])}{'…' if len(registered) > 20 else ''})"
-            if registered
-            else ""
-        )
-        + f"; command {failed.command_id} ({failed.kind} {failed.value}) "
-        + ("may or may not be registered" if unsure else "was not registered")
-        + f": {reason}; {left} were not sent. Run the step again with the same rows and batch key: "
+    shown = ", ".join(registered[:MAX_IDS_IN_MESSAGE])
+    if len(registered) > MAX_IDS_IN_MESSAGE:
+        shown += f" and {len(registered) - MAX_IDS_IN_MESSAGE} more"
+    head = f"{len(done)} of {len(commands)} commands are registered" + (
+        f" ({shown})" if registered else ""
+    )
+    before = f"; command {failed.command_id} ({failed.kind}) " + (
+        "may or may not be registered" if unsure else "was not registered"
+    )
+    after = (
+        f"; {left} were not sent. Run the step again with the same rows and batch key: "
         "registered commands are not applied twice"
     )
+    room = MAX_ERROR_MESSAGE - len(head) - len(before) - len(after) - 2
+    said = f": {errors.safe_text(reason, room)}" if room >= 20 else ""
+    message = head + before + said + after
     return ExtensionError(
         base.code
         if base is not None and base.code != errors.INVALID_PAYLOAD
         else errors.TIMEOUT_UNKNOWN,
-        message,
+        message[:MAX_ERROR_MESSAGE],
         failure_class="provider",
         retryable=False,
         definitely_no_external_effect=False,

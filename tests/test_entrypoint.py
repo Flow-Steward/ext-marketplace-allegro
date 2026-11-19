@@ -76,10 +76,12 @@ def test_the_last_resort_answer_keeps_the_facts_of_a_write() -> None:
         "definitely_no_external_effect": False,
     }
     final, _ = main._bounded_serialized_response(huge)
-    assert final["error_code"] == "response_too_large"
+    # A confirmed change stays a success, cut to its short values.
+    assert final["ok"] is True and final["error_code"] is None
     assert final["external_effect_status"] == "succeeded"
+    assert final["result"]["id"] == "1" and "blob" not in final["result"]
     assert final["definitely_no_external_effect"] is False
-    assert final["result"] == {"id": "1"}
+    assert set(final["result"]) == {"id", "warnings"}
 
 
 def test_control_characters_are_removed_from_the_output() -> None:

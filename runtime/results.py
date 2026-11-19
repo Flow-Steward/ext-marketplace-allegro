@@ -16,6 +16,16 @@ def mark_write(result: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+def nothing_sent(result: dict[str, Any]) -> dict[str, Any]:
+    """A write step that finished without sending anything that can change data (the
+    transport never sent a change): the pair the host takes for "no external effect",
+    as in a test run; nothing was accepted or applied."""
+    result.update(processing=None, applied=False)
+    result["external_effect_status"] = "failed"
+    result["definitely_no_external_effect"] = True
+    return result
+
+
 #: Field names that identify a record and are kept when its full echo cannot be.
 _IDENTIFYING = re.compile(r"^(id|code|number|status)$|(_id|Id|ID|_code|_no|Number)$")
 _SCALARS = (str, int, Decimal, bool, type(None))

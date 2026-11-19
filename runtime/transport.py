@@ -45,7 +45,7 @@ from urllib.request import Request
 
 from flowsteward_extension_sdk import PinnedPeerError, open_pinned_url, parse_retry_after
 
-from . import errors, numbers
+from . import errors, nesting, numbers
 from .connection import Connection
 from .errors import ExtensionError
 
@@ -241,7 +241,7 @@ class AllegroTransport:
             except Exception:  # pragma: no cover - upstream body is optional
                 body = b""
             status = int(exc.code)
-            kept = _kept_headers(exc.headers)
+            kept = _kept_headers(exc.headers, self.scrub)
             if 300 <= status < 400 and str(status) in call.success:
                 return Answer(status, b"", "", kept)
             raise self.refusal(status, body or b"", call, mutating=mutating, headers=kept) from None
@@ -273,7 +273,7 @@ class AllegroTransport:
                 "The connection to Allegro failed" + (CHECK if mutating else ""),
                 **_transport_failure_facts(mutating=mutating),
             ) from None
-        kept = _kept_headers(headers)
+        kept = _kept_headers(headers, self.scrub)
         if status < 200 or status >= 300:
             raise self.refusal(
                 status, raw[:MAX_ERROR_BODY_BYTES], call, mutating=mutating, headers=kept
@@ -425,14 +425,16 @@ def unknown(message: str, code: str, status: int | None) -> ExtensionError:
     )
 
 
-def _kept_headers(headers: Any) -> dict[str, str]:
+def _kept_headers(headers: Any, scrub: Callable[[Any], Any]) -> dict[str, str]:
+    """The headers a step may return, the token removed before they are bounded (so a
+    cut never leaves part of it)."""
     kept: dict[str, str] = {}
     if headers is None or not hasattr(headers, "get"):
         return kept
     for name in KEPT_HEADERS:
         value = headers.get(name)
         if isinstance(value, str) and value.strip():
-            kept[name] = errors.safe_text(value, 2000)
+            kept[name] = errors.safe_text(scrub(value), 2000)
     return kept
 
 
@@ -467,11 +469,19 @@ _ANSWER_FLOAT = _answer_number(False)
 _ANSWER_INT = _answer_number(True)
 
 
+class TooDeep(ValueError):
+    """Allegro's answer nests deeper than ``nesting.MAX_ANSWER_DEPTH``; it is not read."""
+
+
 def parse_json(raw: bytes) -> Any:
     """Any JSON value, numbers with a point read as Decimal; ValueError otherwise.
 
     A number outside ``numbers``' bounds (and NaN or Infinity) is kept as the text
-    Allegro wrote, so reading it never expands it or fails on it."""
+    Allegro wrote, so reading it never expands it or fails on it. An answer nested
+    deeper than ``nesting.MAX_ANSWER_DEPTH`` (counted on the bytes, before parsing) is
+    ``TooDeep`` and never reaches the JSON reader, so no RecursionError comes out."""
+    if nesting.too_deep(raw, nesting.MAX_ANSWER_DEPTH):
+        raise TooDeep(f"nested deeper than {nesting.MAX_ANSWER_DEPTH} levels")
     try:
         text = raw.decode("utf-8-sig", "strict") if raw else ""
     except UnicodeDecodeError as exc:
@@ -484,6 +494,8 @@ def parse_json(raw: bytes) -> Any:
         )
     except json.JSONDecodeError as exc:
         raise ValueError("bad JSON") from exc
+    except RecursionError as exc:  # pragma: no cover - the depth check comes first
+        raise TooDeep("nested too deeply") from exc
 
 
 def read_bounded(
@@ -569,6 +581,7 @@ __all__ = [
     "Answer",
     "Call",
     "DeadlineReached",
+    "TooDeep",
     "dumps_json",
     "parse_json",
     "read_bounded",
