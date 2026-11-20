@@ -34,7 +34,7 @@ import names  # noqa: E402
 
 FACTS = HERE / "allegro_api.json"
 STEP_IDS = HERE / "step_ids.json"
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 EXTENSION_ID = "flowsteward.allegro"
 CONNECTION_TYPES = {"allegro": "production", "allegro_sandbox": "sandbox"}
 HEADER = (
@@ -1285,7 +1285,7 @@ def extension_yaml(rows: list[dict[str, Any]], registry: dict[str, Any]) -> dict
             "category": "sales",
             "tags": ["allegro", "marketplace", "poland", "e-commerce", "offers", "orders"],
             "summary": "Read and update Allegro offers, stock and prices, orders, returns, shipments and messages.",
-            "categories": ["sales", "inventory", "orders"],
+            "categories": ["sales", "inventory", "ecommerce"],
             "setup_summary": (
                 "Register an application at apps.developer.allegro.pl, add its Client ID and "
                 "Client Secret to the connection, sign in to Allegro and run the connection test."

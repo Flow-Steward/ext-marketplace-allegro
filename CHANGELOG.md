@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2 — 2026-11-20
+
+- Listed in the Flow Steward catalog under the category `ecommerce` instead of `orders`, so the extension is shown in the catalog.
+
 ## 0.1.1 — 2026-11-19
 
 - Every step that changes data returns `processing`: `completed` when Allegro answered that the change is made, `accepted` when Allegro answered HTTP 202 or only registered a command (batch offer changes, price, stock, publication and promotion commands, Allegro Prices and AlleDiscount commands, shipment and pickup commands, tracking numbers, badges). With `accepted`, `applied` is false and `check` names the step that reads the outcome and the address Allegro returned. Update stock and prices returns the same.

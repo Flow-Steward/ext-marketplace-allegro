@@ -330,14 +330,14 @@ def test_the_icon_is_a_square_png_and_branding_records_its_hash() -> None:
 
 def test_version_step_limit_and_changelog() -> None:
     manifest = load("extension.yaml")
-    assert manifest["version"] == "0.1.1"
+    assert manifest["version"] == "0.1.2"
     assert manifest["entrypoint"]["timeout_seconds"] == 600
     assert limits.STEP_TIMEOUT_SECONDS == 600
     changelog = (BUNDLE / "CHANGELOG.md").read_text(encoding="utf-8")
-    assert "## 0.1.1" in changelog and "## 0.1.0" in changelog
-    assert changelog.index("## 0.1.1") < changelog.index("## 0.1.0")
+    assert "## 0.1.2" in changelog and "## 0.1.1" in changelog and "## 0.1.0" in changelog
+    assert changelog.index("## 0.1.2") < changelog.index("## 0.1.1") < changelog.index("## 0.1.0")
     page = json.dumps(load("ui/pages/changelog.yaml"))
-    assert "0.1.1" in page and "0.1.0" in page
+    assert "0.1.2" in page and "0.1.1" in page and "0.1.0" in page
 
 
 def test_the_runtime_names_no_server_beyond_allegro() -> None:

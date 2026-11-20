@@ -4,7 +4,7 @@ lifecycle:
   data_migrations: []
 extension_id: flowsteward.allegro
 kind: tool_provider
-version: 0.1.1
+version: 0.1.2
 release_stage: active
 billing_mode: free
 display_name: Allegro
@@ -36,7 +36,7 @@ listing:
   categories:
   - sales
   - inventory
-  - orders
+  - ecommerce
   setup_summary: Register an application at apps.developer.allegro.pl, add its Client
     ID and Client Secret to the connection, sign in to Allegro and run the connection
     test.
